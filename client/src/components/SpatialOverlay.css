@@ -1,0 +1,100 @@
+.spatial-overlay {
+  position: absolute;
+  bottom: 100px;
+  left: 20px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.spatial-card {
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  min-width: 280px;
+  overflow: hidden;
+}
+
+.spatial-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: rgba(102, 126, 234, 0.15);
+  cursor: pointer;
+  user-select: none;
+}
+
+.spatial-header:hover {
+  background: rgba(102, 126, 234, 0.25);
+}
+
+.header-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #fff;
+}
+
+.spatial-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 12px;
+  padding: 8px 14px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.spatial-item:last-child {
+  border-bottom: none;
+}
+
+.spatial-item svg {
+  color: #667eea;
+  flex-shrink: 0;
+}
+
+.spatial-item.cursor-item svg {
+  color: #f59e0b;
+}
+
+.spatial-item .label {
+  color: #888;
+  min-width: 70px;
+  font-size: 11px;
+}
+
+.spatial-item .value {
+  color: #fff;
+  font-family: 'SF Mono', 'Consolas', monospace;
+  font-size: 10px;
+}
+
+.spatial-item .value.coords {
+  color: #a5b4fc;
+  letter-spacing: 0.5px;
+}
+
+.tour-stats {
+  display: flex;
+  gap: 12px;
+  padding: 10px 14px;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(10px);
+  border-radius: 20px;
+  font-size: 11px;
+  color: #888;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tour-stats span {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}

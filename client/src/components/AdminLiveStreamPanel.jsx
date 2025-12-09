@@ -1,0 +1,561 @@
+import React, { useState, useEffect } from 'react';
+import { useTourStore } from '../store/tourStore';
+import livestreamService from '../services/livestreamService';
+import matterportService from '../services/matterportService';
+import { 
+  Video, VideoOff, Monitor, Settings, 
+  Play, Square, Navigation, Sliders,
+  Copy, Check, X, Tv, Eye, Users, ExternalLink
+} from 'lucide-react';
+import './AdminLiveStreamPanel.css';
+
+function AdminLiveStreamPanel({ spaceConfig, isAdmin = false }) {
+  const { mpSdk, isSDKReady, tourData } = useTourStore();
+  const [isOpen, setIsOpen] = useState(false);
+  
+  // Video URL - supports any video format (MP4, HLS, YouTube, Teams, etc.)
+  const [videoUrl, setVideoUrl] = useState('');
+  const [streamTitle, setStreamTitle] = useState('Live Stream');
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [showPositionSettings, setShowPositionSettings] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [videoType, setVideoType] = useState('none');
+  
+  // Screen configuration - TV on wall position
+  const [screenConfig, setScreenConfig] = useState({
+    position: { x: -4.77, y: 1.44, z: 5.74 },
+    rotation: { x: 0, y: 180, z: 0 }, // Facing forward
+    scale: { x: 1.2, y: 0.675, z: 1 }, // 16:9 aspect ratio, TV size
+    resolution: { w: 1280, h: 720 }
+  });
+
+  const spaceId = spaceConfig?.id || 'eaac';
+
+  // Initialize service when SDK is ready
+  useEffect(() => {
+    if (mpSdk && isSDKReady) {
+      livestreamService.initialize(mpSdk);
+      checkExistingStream();
+    }
+  }, [mpSdk, isSDKReady]);
+
+  // Update SDK data when tour data changes
+  useEffect(() => {
+    if (tourData) {
+      livestreamService.updateSdkData({
+        sweeps: tourData.sweeps,
+        floors: tourData.floors,
+        tags: tourData.tags,
+        rooms: tourData.rooms || [],
+        labels: [],
+        modelName: spaceConfig?.nameEn || 'Training Center'
+      });
+    }
+  }, [tourData, spaceConfig]);
+
+  // Detect video type when URL changes
+  useEffect(() => {
+    if (videoUrl) {
+      const type = livestreamService.detectVideoType(videoUrl);
+      setVideoType(type);
+    } else {
+      setVideoType('none');
+    }
+  }, [videoUrl]);
+
+  // Check for existing stream on load
+  const checkExistingStream = async () => {
+    const config = await livestreamService.fetchConfig(spaceId);
+    if (config.active && (config.teamsUrl || config.videoUrl)) {
+      setVideoUrl(config.teamsUrl || config.videoUrl);
+      setStreamTitle(config.title || 'Live Stream');
+      setIsStreaming(true);
+      
+      // Auto-create the embed for users
+      if (!isAdmin) {
+        await createEmbed(config);
+      }
+    }
+    if (config.whiteboard) {
+      setScreenConfig(prev => ({
+        ...prev,
+        position: config.whiteboard.position || prev.position,
+        rotation: config.whiteboard.rotation || prev.rotation,
+        scale: config.whiteboard.scale || prev.scale
+      }));
+    }
+  };
+
+  // Create the embed with current configuration
+  const createEmbed = async (config = null) => {
+    // Update livestream service config
+    livestreamService.updateConfig(screenConfig);
+    
+    // Create stream at video tag or default position
+    await livestreamService.createStreamAtVideoTag(
+      config?.teamsUrl || config?.videoUrl || videoUrl,
+      config?.title || streamTitle
+    );
+  };
+
+  // Admin: Start stream
+  const startStream = async () => {
+    if (!videoUrl.trim()) {
+      alert('Please enter a video URL (MP4, YouTube, HLS, Teams, etc.)');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      console.log('🎬 Starting stream with config:', screenConfig);
+      console.log('🎬 Video URL:', videoUrl);
+      console.log('🎬 SDK Scene available:', !!mpSdk?.Scene);
+      
+      // Update service config
+      livestreamService.updateConfig(screenConfig);
+      
+      // Save to server
+      const result = await livestreamService.setLivestreamUrl(spaceId, videoUrl, streamTitle);
+      console.log('🎬 Server response:', result);
+      
+      if (result.success) {
+        // Create screen directly with full config
+        const screenConfig2 = {
+          position: screenConfig.position,
+          rotation: screenConfig.rotation,
+          scale: screenConfig.scale,
+          resolution: screenConfig.resolution,
+          videoUrl: videoUrl,
+          title: streamTitle
+        };
+        console.log('🎬 Creating screen with config:', screenConfig2);
+        console.log('🎬 videoUrl value:', videoUrl, 'type:', typeof videoUrl);
+        
+        const screenResult = await livestreamService.createScreen(screenConfig2);
+        
+        console.log('🎬 Screen creation result:', screenResult);
+        setIsStreaming(true);
+      }
+    } catch (error) {
+      console.error('Failed to start stream:', error);
+      alert('Failed to start stream: ' + error.message);
+    }
+    setLoading(false);
+  };
+
+  // Admin: Stop stream
+  const stopStream = async () => {
+    setLoading(true);
+    try {
+      await livestreamService.stopLivestream(spaceId);
+      await livestreamService.removeScreen();
+      setIsStreaming(false);
+    } catch (error) {
+      console.error('Failed to stop stream:', error);
+    }
+    setLoading(false);
+  };
+
+  // Update screen position/rotation in real-time
+  const applyConfig = async () => {
+    if (isStreaming) {
+      setLoading(true);
+      try {
+        await livestreamService.removeScreen();
+        await livestreamService.createScreen({
+          ...screenConfig,
+          videoUrl: videoUrl,
+          title: streamTitle
+        });
+      } catch (error) {
+        console.error('Failed to apply config:', error);
+      }
+      setLoading(false);
+    }
+  };
+
+  // Navigate to the screen location
+  const navigateToScreen = async () => {
+    try {
+      // First try to find and navigate to the "video streaming" tag
+      const tag = await livestreamService.findTagByLabel('video streaming');
+      
+      if (tag) {
+        await livestreamService.navigateToTag(tag.sid || tag.id);
+        console.log('📍 Navigated to video streaming tag');
+        return;
+      }
+      
+      // Fallback: Navigate to the position near the screen
+      const sweeps = tourData?.sweeps;
+      if (sweeps && sweeps.length > 0) {
+        let closestSweep = sweeps[0];
+        let minDist = Infinity;
+        
+        sweeps.forEach(sweep => {
+          if (sweep.position) {
+            const dist = Math.sqrt(
+              Math.pow(sweep.position.x - screenConfig.position.x, 2) +
+              Math.pow(sweep.position.z - screenConfig.position.z, 2)
+            );
+            if (dist < minDist) {
+              minDist = dist;
+              closestSweep = sweep;
+            }
+          }
+        });
+        
+        await matterportService.navigateToSweep(closestSweep.id);
+      }
+    } catch (error) {
+      console.error('Navigation error:', error);
+    }
+  };
+
+  const copyUrl = () => {
+    if (videoUrl) {
+      navigator.clipboard.writeText(videoUrl);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
+  const openExternal = () => {
+    if (videoUrl) {
+      window.open(videoUrl, '_blank');
+    }
+  };
+
+  // Detect video type from URL
+  const detectVideoType = () => {
+    if (!videoUrl) return 'none';
+    const url = videoUrl.toLowerCase();
+    if (url.match(/\.(mp4|webm|ogg|mov|avi)($|\?)/)) return 'direct';
+    if (url.includes('.m3u8')) return 'hls';
+    if (url.includes('youtube.com') || url.includes('youtu.be')) return 'youtube';
+    if (url.includes('vimeo.com')) return 'vimeo';
+    if (url.includes('teams.microsoft.com') || url.includes('zoom.us') || url.includes('meet.google.com')) return 'meeting';
+    if (url.startsWith('rtmp://') || url.startsWith('rtsp://')) return 'rtmp';
+    return 'direct';
+  };
+
+  // Get video type label
+  const getVideoTypeLabel = () => {
+    const type = detectVideoType();
+    const labels = {
+      'direct': '🎬 MP4/WebM',
+      'hls': '📡 HLS Stream',
+      'youtube': '📺 YouTube',
+      'vimeo': '🎬 Vimeo',
+      'meeting': '📞 Meeting',
+      'rtmp': '📡 RTMP',
+      'none': '❓ Unknown'
+    };
+    return labels[type] || type;
+  };
+
+  // Only show for spaces with live-stream feature
+  if (!spaceConfig?.features?.includes('live-stream')) {
+    return null;
+  }
+
+  return (
+    <>
+      {/* Toggle Button */}
+      <button 
+        className={`livestream-toggle ${isStreaming ? 'streaming' : ''}`}
+        onClick={() => setIsOpen(!isOpen)}
+        title={isAdmin ? 'Admin: Manage Live Stream' : 'View Live Stream'}
+      >
+        <Tv size={20} />
+        {isStreaming && <span className="live-indicator">LIVE</span>}
+      </button>
+
+      {/* Panel */}
+      {isOpen && (
+        <div className="admin-livestream-panel">
+          <div className="panel-header">
+            <div className="header-title">
+              <Monitor size={18} />
+              <span>{isAdmin ? 'Admin: Live Stream Control' : 'Live Stream'}</span>
+            </div>
+            <button className="close-btn" onClick={() => setIsOpen(false)}>
+              <X size={18} />
+            </button>
+          </div>
+
+          <div className="panel-content">
+            {/* Status */}
+            <div className={`stream-status ${isStreaming ? 'active' : 'inactive'}`}>
+              <div className="status-dot"></div>
+              <span>{isStreaming ? `Stream Active (${getVideoTypeLabel()})` : 'No Active Stream'}</span>
+            </div>
+
+            {/* Admin Controls */}
+            {isAdmin ? (
+              <>
+                {/* Stream Title */}
+                <div className="input-group">
+                  <label>Stream Title</label>
+                  <input
+                    type="text"
+                    placeholder="Live Stream"
+                    value={streamTitle}
+                    onChange={(e) => setStreamTitle(e.target.value)}
+                    disabled={isStreaming}
+                  />
+                </div>
+
+                {/* Video URL - supports any format */}
+                <div className="input-group">
+                  <label>Video URL (MP4, HLS, YouTube, Teams, etc.)</label>
+                  <div className="input-row">
+                    <input
+                      type="text"
+                      placeholder="https://example.com/video.mp4 or YouTube/Teams URL"
+                      value={videoUrl}
+                      onChange={(e) => setVideoUrl(e.target.value)}
+                      disabled={isStreaming}
+                    />
+                    {videoUrl && (
+                      <button className="icon-btn" onClick={copyUrl} title="Copy URL">
+                        {copied ? <Check size={16} /> : <Copy size={16} />}
+                      </button>
+                    )}
+                  </div>
+                  {videoUrl && (
+                    <small className="video-type-hint">
+                      Detected: {getVideoTypeLabel()}
+                    </small>
+                  )}
+                </div>
+
+                {/* Stream Controls */}
+                <div className="stream-controls">
+                  {!isStreaming ? (
+                    <button 
+                      className="control-btn start"
+                      onClick={startStream}
+                      disabled={!videoUrl.trim() || loading}
+                    >
+                      <Play size={18} />
+                      <span>{loading ? 'Starting...' : 'Start Stream'}</span>
+                    </button>
+                  ) : (
+                    <button 
+                      className="control-btn stop"
+                      onClick={stopStream}
+                      disabled={loading}
+                    >
+                      <Square size={18} />
+                      <span>{loading ? 'Stopping...' : 'Stop Stream'}</span>
+                    </button>
+                  )}
+                  
+                  {/* Open External Button for YouTube/Meetings */}
+                  {isStreaming && videoUrl && (detectVideoType() === 'youtube' || detectVideoType() === 'meeting') && (
+                    <button 
+                      className="control-btn external"
+                      onClick={() => window.open(videoUrl, '_blank')}
+                    >
+                      <ExternalLink size={18} />
+                      <span>Open in Browser</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* Position Settings */}
+                <button 
+                  className="settings-toggle"
+                  onClick={() => setShowPositionSettings(!showPositionSettings)}
+                >
+                  <Sliders size={16} />
+                  <span>Screen Position & Rotation</span>
+                </button>
+
+                {showPositionSettings && (
+                  <div className="position-settings">
+                    <h5>Position</h5>
+                    <div className="position-row">
+                      <label>X:</label>
+                      <input 
+                        type="number" 
+                        step="0.1"
+                        value={screenConfig.position.x}
+                        onChange={(e) => setScreenConfig(prev => ({
+                          ...prev,
+                          position: { ...prev.position, x: parseFloat(e.target.value) || 0 }
+                        }))}
+                      />
+                      <label>Y:</label>
+                      <input 
+                        type="number" 
+                        step="0.1"
+                        value={screenConfig.position.y}
+                        onChange={(e) => setScreenConfig(prev => ({
+                          ...prev,
+                          position: { ...prev.position, y: parseFloat(e.target.value) || 0 }
+                        }))}
+                      />
+                      <label>Z:</label>
+                      <input 
+                        type="number" 
+                        step="0.1"
+                        value={screenConfig.position.z}
+                        onChange={(e) => setScreenConfig(prev => ({
+                          ...prev,
+                          position: { ...prev.position, z: parseFloat(e.target.value) || 0 }
+                        }))}
+                      />
+                    </div>
+                    
+                    <h5>Rotation (degrees)</h5>
+                    <div className="position-row">
+                      <label>X:</label>
+                      <input 
+                        type="number" 
+                        step="5"
+                        value={screenConfig.rotation.x}
+                        onChange={(e) => setScreenConfig(prev => ({
+                          ...prev,
+                          rotation: { ...prev.rotation, x: parseFloat(e.target.value) || 0 }
+                        }))}
+                      />
+                      <label>Y:</label>
+                      <input 
+                        type="number" 
+                        step="5"
+                        value={screenConfig.rotation.y}
+                        onChange={(e) => setScreenConfig(prev => ({
+                          ...prev,
+                          rotation: { ...prev.rotation, y: parseFloat(e.target.value) || 0 }
+                        }))}
+                      />
+                      <label>Z:</label>
+                      <input 
+                        type="number" 
+                        step="5"
+                        value={screenConfig.rotation.z}
+                        onChange={(e) => setScreenConfig(prev => ({
+                          ...prev,
+                          rotation: { ...prev.rotation, z: parseFloat(e.target.value) || 0 }
+                        }))}
+                      />
+                    </div>
+                    
+                    <h5>Scale</h5>
+                    <div className="position-row">
+                      <label>W:</label>
+                      <input 
+                        type="number" 
+                        step="0.1"
+                        value={screenConfig.scale.x}
+                        onChange={(e) => setScreenConfig(prev => ({
+                          ...prev,
+                          scale: { ...prev.scale, x: parseFloat(e.target.value) || 1 }
+                        }))}
+                      />
+                      <label>H:</label>
+                      <input 
+                        type="number" 
+                        step="0.1"
+                        value={screenConfig.scale.y}
+                        onChange={(e) => setScreenConfig(prev => ({
+                          ...prev,
+                          scale: { ...prev.scale, y: parseFloat(e.target.value) || 1 }
+                        }))}
+                      />
+                    </div>
+                    
+                    {isStreaming && (
+                      <button 
+                        className="action-btn apply"
+                        onClick={applyConfig}
+                        disabled={loading}
+                      >
+                        <Settings size={14} />
+                        <span>Apply Changes</span>
+                      </button>
+                    )}
+                    
+                    <div className="size-info">
+                      <small>Resolution: {screenConfig.resolution.w} × {screenConfig.resolution.h}</small>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              /* User View - Read Only */
+              <>
+                {isStreaming ? (
+                  <div className="user-stream-info">
+                    <div className="meeting-card">
+                      <div className="meeting-icon">
+                        <Users size={24} />
+                      </div>
+                      <div className="meeting-details">
+                        <h4>{streamTitle}</h4>
+                        <p>{getVideoTypeLabel()} in progress</p>
+                      </div>
+                    </div>
+                    
+                    {videoType === 'meeting' && (
+                      <button 
+                        className="action-btn primary"
+                        onClick={openExternal}
+                      >
+                        <Video size={16} />
+                        <span>Join Meeting</span>
+                      </button>
+                    )}
+                  </div>
+                ) : (
+                  <div className="no-stream-message">
+                    <VideoOff size={32} />
+                    <p>No active stream at this time</p>
+                    <small>Check back later or contact the administrator</small>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Navigate to Screen */}
+            <button 
+              className="action-btn navigate"
+              onClick={navigateToScreen}
+            >
+              <Navigation size={16} />
+              <span>Go to Screen</span>
+            </button>
+
+            {/* SDK Data Display */}
+            <div className="sdk-data-panel">
+              <h4>Space Data</h4>
+              <div className="data-grid">
+                <div className="data-item">
+                  <span className="data-value">{tourData.sweeps?.length || 0}</span>
+                  <span className="data-label">Views</span>
+                </div>
+                <div className="data-item">
+                  <span className="data-value">{tourData.floors?.length || 0}</span>
+                  <span className="data-label">Floors</span>
+                </div>
+                <div className="data-item">
+                  <span className="data-value">{tourData.tags?.length || 0}</span>
+                  <span className="data-label">Tags</span>
+                </div>
+                <div className="data-item">
+                  <span className="data-value">{tourData.rooms?.length || 0}</span>
+                  <span className="data-label">Rooms</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </>
+  );
+}
+
+export default AdminLiveStreamPanel;

@@ -1,0 +1,109 @@
+.incoming-call-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  z-index: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  animation: fadeIn 0.3s ease;
+}
+
+.incoming-call-modal {
+  background: linear-gradient(180deg, #1a1a2e 0%, #16162a 100%);
+  padding: 48px;
+  border-radius: 28px;
+  text-align: center;
+  animation: slideUp 0.4s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 30px 100px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes slideUp {
+  from { transform: translateY(30px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.caller-avatar {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 24px;
+  color: white;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(102, 126, 234, 0.4); }
+  50% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(102, 126, 234, 0); }
+}
+
+.incoming-call-modal h3 {
+  font-size: 28px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: white;
+}
+
+.incoming-call-modal p {
+  color: #888;
+  margin-bottom: 16px;
+  font-size: 16px;
+}
+
+.incoming-call-type {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  font-size: 14px;
+  color: #aaa;
+  margin-bottom: 32px;
+}
+
+.call-actions {
+  display: flex;
+  gap: 48px;
+  justify-content: center;
+}
+
+.reject-btn,
+.accept-btn {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  color: white;
+}
+
+.reject-btn {
+  background: #ef4444;
+}
+
+.accept-btn {
+  background: #22c55e;
+}
+
+.reject-btn:hover,
+.accept-btn:hover {
+  transform: scale(1.1);
+}
+
+.reject-btn:hover {
+  background: #dc2626;
+}
+
+.accept-btn:hover {
+  background: #16a34a;
+}

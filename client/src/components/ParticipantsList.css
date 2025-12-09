@@ -1,0 +1,141 @@
+.participants-panel {
+  position: fixed;
+  top: 20px;
+  right: 80px;
+  width: 300px;
+  max-height: 400px;
+  background: rgba(15, 15, 20, 0.95);
+  backdrop-filter: blur(20px);
+  border-radius: 16px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  z-index: 90;
+  overflow: hidden;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from { transform: translateX(20px); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.participants-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.participants-header h3 {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.participants-list {
+  padding: 12px;
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.no-participants {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 20px;
+  text-align: center;
+  color: #666;
+}
+
+.no-participants svg {
+  margin-bottom: 12px;
+  opacity: 0.5;
+}
+
+.no-participants p {
+  font-size: 14px;
+  color: #888;
+  margin-bottom: 4px;
+}
+
+.no-participants span {
+  font-size: 12px;
+}
+
+.participant-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  border-radius: 12px;
+  transition: background 0.2s;
+}
+
+.participant-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.participant-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  flex-shrink: 0;
+}
+
+.participant-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.participant-name {
+  display: block;
+  font-size: 14px;
+  font-weight: 500;
+  color: white;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.participant-location {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  color: #888;
+  margin-top: 2px;
+}
+
+.participant-actions {
+  display: flex;
+  gap: 6px;
+}
+
+.participant-actions button {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  background: rgba(255, 255, 255, 0.05);
+  color: #888;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.participant-actions button:hover:not(:disabled) {
+  background: rgba(102, 126, 234, 0.2);
+  color: #667eea;
+}
+
+.participant-actions button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}

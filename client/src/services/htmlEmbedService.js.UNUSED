@@ -1,0 +1,343 @@
+import { useTourStore } from '../store/tourStore';
+
+/**
+ * HTML Embed Service for Matterport SDK
+ * Embeds HTML content (like Teams live streams) into the 3D space
+ */
+class HtmlEmbedService {
+  constructor() {
+    this.mpSdk = null;
+    this.htmlFactory = null;
+    this.embeddedElements = new Map();
+  }
+
+  /**
+   * Initialize the service with Matterport SDK
+   */
+  async initialize(mpSdk) {
+    this.mpSdk = mpSdk;
+    
+    try {
+      // Create HTML factory for embedding content
+      this.htmlFactory = await this.mpSdk.Scene.createNode();
+      console.log('🎬 HTML Embed Service initialized');
+      return true;
+    } catch (error) {
+      console.error('Failed to initialize HTML Embed Service:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Create a Teams Live Stream embed at a specific position in the 3D space
+   * @param {string} teamsUrl - Microsoft Teams meeting URL or embed URL
+   * @param {object} position - {x, y, z} position in 3D space
+   * @param {object} rotation - {x, y, z} rotation in degrees
+   * @param {object} size - {width, height} in meters
+   * @param {string} sweepId - Optional sweep ID to attach to
+   */
+  async createTeamsLiveStream(teamsUrl, position, rotation = { x: 0, y: 0, z: 0 }, size = { width: 2, height: 1.5 }, sweepId = null) {
+    if (!this.mpSdk) {
+      console.error('SDK not initialized');
+      return null;
+    }
+
+    try {
+      // Create the HTML embed using Matterport's Scene API
+      const [sceneObject] = await this.mpSdk.Scene.createObjects(1);
+      
+      const node = sceneObject.addNode();
+      
+      // Add HTML component
+      const htmlComponent = node.addComponent('mp.htmlEmbed', {
+        url: this.buildTeamsEmbedUrl(teamsUrl),
+        size: {
+          w: size.width,
+          h: size.height
+        },
+        position: position,
+        rotation: {
+          x: rotation.x * (Math.PI / 180),
+          y: rotation.y * (Math.PI / 180),
+          z: rotation.z * (Math.PI / 180)
+        },
+        transparent: false,
+        billboard: false // Keep fixed orientation
+      });
+
+      node.start();
+      
+      const embedId = `teams-stream-${Date.now()}`;
+      this.embeddedElements.set(embedId, {
+        sceneObject,
+        node,
+        component: htmlComponent,
+        type: 'teams-stream',
+        position,
+        sweepId
+      });
+
+      console.log(`📺 Teams Live Stream embedded at position:`, position);
+      
+      return embedId;
+    } catch (error) {
+      console.error('Failed to create Teams Live Stream:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Create HTML embed using iframe approach (fallback method)
+   */
+  async createHtmlEmbed(htmlContent, position, rotation = { x: 0, y: 0, z: 0 }, size = { width: 2, height: 1.5 }) {
+    if (!this.mpSdk) {
+      console.error('SDK not initialized');
+      return null;
+    }
+
+    try {
+      const [sceneObject] = await this.mpSdk.Scene.createObjects(1);
+      const node = sceneObject.addNode();
+
+      // Create iframe component
+      const iframeComponent = node.addComponent('mp.iframe', {
+        src: htmlContent,
+        size: { w: size.width, h: size.height }
+      });
+
+      // Set position
+      node.position.set(position.x, position.y, position.z);
+      
+      // Set rotation (convert degrees to radians)
+      node.rotation.set(
+        rotation.x * (Math.PI / 180),
+        rotation.y * (Math.PI / 180),
+        rotation.z * (Math.PI / 180)
+      );
+
+      node.start();
+
+      const embedId = `html-embed-${Date.now()}`;
+      this.embeddedElements.set(embedId, {
+        sceneObject,
+        node,
+        component: iframeComponent,
+        type: 'html-embed',
+        position
+      });
+
+      return embedId;
+    } catch (error) {
+      console.error('Failed to create HTML embed:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Create a video screen embed using Matterport's built-in video component
+   */
+  async createVideoScreen(videoUrl, position, rotation = { x: 0, y: 0, z: 0 }, size = { width: 2, height: 1.125 }) {
+    if (!this.mpSdk) {
+      console.error('SDK not initialized');
+      return null;
+    }
+
+    try {
+      const [sceneObject] = await this.mpSdk.Scene.createObjects(1);
+      const node = sceneObject.addNode();
+
+      // Add video component
+      const videoComponent = node.addComponent('mp.video', {
+        src: videoUrl,
+        size: { w: size.width, h: size.height },
+        autoplay: true,
+        loop: true,
+        muted: false
+      });
+
+      node.position.set(position.x, position.y, position.z);
+      node.rotation.set(
+        rotation.x * (Math.PI / 180),
+        rotation.y * (Math.PI / 180),
+        rotation.z * (Math.PI / 180)
+      );
+
+      node.start();
+
+      const embedId = `video-screen-${Date.now()}`;
+      this.embeddedElements.set(embedId, {
+        sceneObject,
+        node,
+        component: videoComponent,
+        type: 'video-screen',
+        position
+      });
+
+      console.log(`🎥 Video screen created at position:`, position);
+      return embedId;
+    } catch (error) {
+      console.error('Failed to create video screen:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Build Teams embed URL from meeting URL
+   */
+  buildTeamsEmbedUrl(teamsUrl) {
+    // If it's already an embed URL, return as is
+    if (teamsUrl.includes('embed') || teamsUrl.includes('iframe')) {
+      return teamsUrl;
+    }
+    
+    // Convert Teams meeting URL to embed format
+    // Teams URLs can be: https://teams.microsoft.com/l/meetup-join/...
+    // Or direct: https://teams.live.com/meet/...
+    
+    // For live events, use the embed format
+    if (teamsUrl.includes('teams.microsoft.com')) {
+      // Extract meeting ID and create embed URL
+      return teamsUrl;
+    }
+    
+    return teamsUrl;
+  }
+
+  /**
+   * Create a placeholder screen for Teams (when no meeting is active)
+   */
+  async createTeamsPlaceholder(position, rotation = { x: 0, y: 0, z: 0 }, size = { width: 2, height: 1.5 }) {
+    const placeholderHtml = `
+      data:text/html,
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <style>
+          body {
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            background: linear-gradient(135deg, %235c4d9a 0%%, %236264a7 100%%);
+            font-family: 'Segoe UI', sans-serif;
+            color: white;
+          }
+          .logo {
+            font-size: 48px;
+            margin-bottom: 20px;
+          }
+          h2 {
+            margin: 0;
+            font-weight: 400;
+          }
+          p {
+            opacity: 0.8;
+            margin-top: 10px;
+          }
+          .pulse {
+            animation: pulse 2s infinite;
+          }
+          @keyframes pulse {
+            0%%, 100%% { opacity: 1; }
+            50%% { opacity: 0.5; }
+          }
+        </style>
+      </head>
+      <body>
+        <div class="logo">📹</div>
+        <h2>Microsoft Teams</h2>
+        <p class="pulse">Live Stream Ready</p>
+        <p>Meeting will appear here</p>
+      </body>
+      </html>
+    `;
+
+    return await this.createHtmlEmbed(placeholderHtml, position, rotation, size);
+  }
+
+  /**
+   * Update an existing embed's URL
+   */
+  async updateEmbedUrl(embedId, newUrl) {
+    const embed = this.embeddedElements.get(embedId);
+    if (!embed) {
+      console.error('Embed not found:', embedId);
+      return false;
+    }
+
+    try {
+      embed.component.inputs.url = newUrl;
+      return true;
+    } catch (error) {
+      console.error('Failed to update embed URL:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Remove an embedded element
+   */
+  async removeEmbed(embedId) {
+    const embed = this.embeddedElements.get(embedId);
+    if (!embed) {
+      console.error('Embed not found:', embedId);
+      return false;
+    }
+
+    try {
+      embed.node.stop();
+      embed.sceneObject.stop();
+      this.embeddedElements.delete(embedId);
+      console.log(`🗑️ Removed embed: ${embedId}`);
+      return true;
+    } catch (error) {
+      console.error('Failed to remove embed:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Get all embedded elements
+   */
+  getAllEmbeds() {
+    return Array.from(this.embeddedElements.entries()).map(([id, data]) => ({
+      id,
+      type: data.type,
+      position: data.position,
+      sweepId: data.sweepId
+    }));
+  }
+
+  /**
+   * Navigate to a sweep with an embedded element
+   */
+  async navigateToEmbed(embedId) {
+    const embed = this.embeddedElements.get(embedId);
+    if (!embed || !embed.sweepId) {
+      console.error('Embed not found or no sweep associated');
+      return false;
+    }
+
+    try {
+      await this.mpSdk.Sweep.moveTo(embed.sweepId);
+      return true;
+    } catch (error) {
+      console.error('Failed to navigate to embed:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Cleanup all embeds
+   */
+  async cleanup() {
+    for (const [embedId] of this.embeddedElements) {
+      await this.removeEmbed(embedId);
+    }
+    this.embeddedElements.clear();
+  }
+}
+
+export default new HtmlEmbedService();
