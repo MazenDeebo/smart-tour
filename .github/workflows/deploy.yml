@@ -35,9 +35,9 @@ jobs:
       - name: Build
         working-directory: ./client
         env:
-          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
-          VITE_MATTERPORT_SDK_KEY: ${{ secrets.VITE_MATTERPORT_SDK_KEY }}
-          VITE_DEFAULT_MODEL_ID: ${{ secrets.VITE_DEFAULT_MODEL_ID }}
+          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY || '' }}
+          VITE_MATTERPORT_SDK_KEY: ${{ secrets.VITE_MATTERPORT_SDK_KEY || 'bnx9rtn9umenhf4ym8bngu7ud' }}
+          VITE_DEFAULT_MODEL_ID: ${{ secrets.VITE_DEFAULT_MODEL_ID || 'J9fEBnyKuiv' }}
         run: npm run build
 
       - name: Setup Pages
