@@ -7,8 +7,7 @@ const SDK_KEY = import.meta.env.VITE_MATTERPORT_SDK_KEY || 'bnx9rtn9umenhf4ym8bn
 const DEFAULT_MODEL_ID = import.meta.env.VITE_DEFAULT_MODEL_ID || 'J9fEBnyKuiv';
 
   // Use SDK Bundle for Scene API support (3D objects, canvas renderer, etc.)
-  // Set to false for GitHub Pages to use hosted Matterport (more reliable)
-const USE_SDK_BUNDLE = false;
+const USE_SDK_BUNDLE = true;
 
 function MatterportViewer({ modelId }) {
   const iframeRef = useRef(null);
