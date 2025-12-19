@@ -8,8 +8,7 @@ const SDK_KEY = import.meta.env.VITE_MATTERPORT_SDK_KEY || 'bnx9rtn9umenhf4ym8bn
 const DEFAULT_MODEL_ID = import.meta.env.VITE_DEFAULT_MODEL_ID || 'J9fEBnyKuiv';
 
   // Use SDK Bundle for Scene API support (3D objects, canvas renderer, etc.)
-  // Disable for GitHub Pages deployment (bundle not available)
-const USE_SDK_BUNDLE = false;
+const USE_SDK_BUNDLE = true;
 
 function MatterportViewer({ modelId }) {
   const iframeRef = useRef(null);
@@ -27,25 +26,20 @@ function MatterportViewer({ modelId }) {
       console.log('🚀 Initializing Matterport SDK for model:', currentModelId);
       await matterportService.connect(iframeRef.current);
       
-      // Only connect to server if socket is available
-      if (socketService.socket) {
-        // Join tour room
-        socketService.joinTour(currentModelId, userId, userName, 'guest');
-        
-        // Initialize AI session with space config
-        socketService.initializeSession({
-          spaceId: currentModelId,
-          spaceName: spaceConfig?.nameEn || 'Virtual Tour',
-          spaceType: spaceConfig?.type || 'property',
-          spaceInfo: {
-            description: spaceConfig?.description || '',
-            features: spaceConfig?.features || [],
-            sections: spaceConfig?.sections || [],
-          }
-        });
-      } else {
-        console.log('ℹ️ Running in standalone mode - server features disabled');
-      }
+      // Join tour room
+      socketService.joinTour(currentModelId, userId, userName, 'guest');
+      
+      // Initialize AI session with space config
+      socketService.initializeSession({
+        spaceId: currentModelId,
+        spaceName: spaceConfig?.nameEn || 'Virtual Tour',
+        spaceType: spaceConfig?.type || 'property',
+        spaceInfo: {
+          description: spaceConfig?.description || '',
+          features: spaceConfig?.features || [],
+          sections: spaceConfig?.sections || [],
+        }
+      });
       
       console.log('✅ SDK initialized successfully');
     } catch (error) {
@@ -69,9 +63,9 @@ function MatterportViewer({ modelId }) {
     };
   }, []);
 
-  // Broadcast spatial updates (only if socket is connected)
+  // Broadcast spatial updates
   useEffect(() => {
-    if (!isSDKReady || !socketService.socket) return;
+    if (!isSDKReady) return;
 
     const interval = setInterval(() => {
       socketService.updateSpatial(spatial);

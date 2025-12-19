@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # 🏠 Matterport Smart Virtual Tour System
 
 A comprehensive intelligent virtual tour platform that integrates **Matterport 3D spaces**, **Google Gemini AI chatbot**, and **WebRTC video/audio calling** with real-time spatial awareness and multi-user support.
@@ -880,3 +881,6 @@ MIT License - Feel free to use and modify.
 ---
 
 **Built with ❤️ using Matterport, Google Gemini, and React**
+=======
+# ArabIQ_matterport
+>>>>>>> 8475c3b96f9ffb89a146829a2c20a8d6e4b61ff8

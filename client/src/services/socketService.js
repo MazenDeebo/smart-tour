@@ -10,13 +10,6 @@ class SocketService {
   connect() {
     const serverUrl = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
     
-    // Skip socket connection in production if no server URL is configured
-    if (import.meta.env.PROD && serverUrl === 'http://localhost:3001') {
-      console.log('⚠️ Running in standalone mode (no backend server)');
-      useTourStore.getState().setConnected(false);
-      return null;
-    }
-    
     this.socket = io(serverUrl, {
       transports: ['websocket', 'polling'],
       autoConnect: true,

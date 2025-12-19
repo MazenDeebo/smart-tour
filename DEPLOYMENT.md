@@ -1,150 +1,143 @@
-# Deployment Guide for GitHub Pages
+# Deployment Guide
 
-## 🔒 Security First - Protecting Your API Keys
+## Overview
 
-This project uses GitHub Secrets to securely store API keys. **NEVER commit `.env` files or expose API keys in your code.**
+This project consists of two parts:
+1. **Client** (React/Vite) - Can be deployed to GitHub Pages
+2. **Server** (Node.js/Express) - Needs a separate hosting service
 
-## 📋 Prerequisites
+## Important: GitHub Pages Limitations
 
-1. GitHub account
-2. Git installed locally
-3. Node.js and npm installed
+GitHub Pages only hosts **static files**. The server (backend) must be deployed separately to a service like:
+- [Render](https://render.com) (Free tier available)
+- [Railway](https://railway.app)
+- [Vercel](https://vercel.com) (for serverless)
+- [Heroku](https://heroku.com)
 
-## 🚀 Deployment Steps
+---
 
-### Step 1: Configure GitHub Repository Secrets
+## Step 1: Deploy the Server
 
-1. Go to your GitHub repository: `https://github.com/MazenDeebo/ArabIQ_matterport`
-2. Click on **Settings** → **Secrets and variables** → **Actions**
-3. Click **New repository secret** and add the following secrets:
+### Option A: Deploy to Render (Recommended - Free)
 
-   | Secret Name | Value | Description |
-   |------------|-------|-------------|
-   | `VITE_MATTERPORT_SDK_KEY` | `bnx9rtn9umenhf4ym8bngu7ud` | Your Matterport SDK key |
-   | `VITE_MATTERPORT_MODEL_ID` | `J9fEBnyKuiv` | Your Matterport model ID |
-   | `VITE_GEMINI_API_KEY` | `AIzaSyAe5Zh1uy2MFDmVGgiEbXOEPoFsYXeNSWY` | Google Gemini API key |
-   | `VITE_SERVER_URL` | `https://your-backend-url.com` | Your backend server URL (if deployed) |
+1. Create account at [render.com](https://render.com)
+2. Click "New" → "Web Service"
+3. Connect your GitHub repository
+4. Configure:
+   - **Name**: `matterport-smart-tour-server`
+   - **Root Directory**: `server`
+   - **Build Command**: `npm install`
+   - **Start Command**: `node src/app.js`
+5. Add Environment Variables:
+   - `PORT`: `3001`
+   - `CLIENT_URL`: `https://mazendeebo.github.io`
+   - `GEMINI_API_KEY`: Your Gemini API key
+   - `CORS_ORIGIN`: `https://mazendeebo.github.io`
+   - `MATTERPORT_SDK_KEY`: Your Matterport SDK key
+   - `MATTERPORT_MODEL_ID`: Your model ID
+6. Deploy and note the URL (e.g., `https://matterport-smart-tour-server.onrender.com`)
 
-### Step 2: Enable GitHub Pages
+---
 
-1. Go to **Settings** → **Pages**
-2. Under **Source**, select **GitHub Actions**
-3. Save the settings
+## Step 2: Configure GitHub Secrets
 
-### Step 3: Push to GitHub
+Go to your GitHub repository → Settings → Secrets and variables → Actions
 
-The GitHub Actions workflow will automatically deploy when you push to the `main` branch.
+Add these secrets:
+- `VITE_SERVER_URL`: Your deployed server URL (from Step 1)
+- `VITE_MATTERPORT_SDK_KEY`: `bnx9rtn9umenhf4ym8bngu7ud`
+- `VITE_DEFAULT_MODEL_ID`: `J9fEBnyKuiv`
 
-```bash
-# Initialize git (if not already done)
-cd "D:/ArabIQ company/Demos/matterport-smart-tour"
-git init
+---
 
-# Add remote repository
-git remote add origin https://github.com/MazenDeebo/ArabIQ_matterport.git
+## Step 3: Deploy Client to GitHub Pages
 
-# Add all files (respecting .gitignore)
-git add .
+### Automatic Deployment (Recommended)
 
-# Commit
-git commit -m "Initial deployment setup"
+1. Push your code to the `main` branch
+2. Go to repository Settings → Pages
+3. Under "Build and deployment", select:
+   - Source: **GitHub Actions**
+4. The workflow will automatically build and deploy
 
-# Push to main branch
-git push -u origin main
-```
-
-### Step 4: Monitor Deployment
-
-1. Go to **Actions** tab in your GitHub repository
-2. Watch the deployment workflow progress
-3. Once complete, your site will be live at: `https://mazendeebo.github.io/ArabIQ_matterport/`
-
-## 🔧 Local Development
-
-### Setup Environment Variables
-
-1. Copy `.env.example` to `.env` in the `client` directory:
-   ```bash
-   cd client
-   cp .env.example .env
-   ```
-
-2. Fill in your actual API keys in the `.env` file
-
-3. Install dependencies:
-   ```bash
-   npm install
-   ```
-
-4. Run development server:
-   ```bash
-   npm run dev
-   ```
-
-## 📦 Manual Deployment (Alternative)
-
-If you prefer to deploy manually without GitHub Actions:
+### Manual Deployment
 
 ```bash
 cd client
 npm install
 npm run build
-npm run deploy
+# The dist folder contains the static files
 ```
 
-This will build and deploy to the `gh-pages` branch.
+---
 
-## ⚠️ Important Security Notes
+## Step 4: Configure Matterport SDK
 
-1. **Never commit these files:**
-   - `.env`
-   - `.env.local`
-   - Any file containing API keys
-   - `node_modules/`
+Make sure your Matterport SDK key is configured to allow your GitHub Pages domain:
 
-2. **The `.gitignore` file is configured to prevent accidental commits of sensitive data**
+1. Go to [Matterport Developer Portal](https://matterport.com/developers)
+2. Find your SDK key
+3. Add domain: `mazendeebo.github.io` (https only)
+4. Add domain: `localhost:3000` (for local development)
 
-3. **Always use GitHub Secrets for production deployments**
+---
 
-4. **Rotate your API keys if they are ever exposed**
+## Environment Variables Reference
 
-## 🔄 Updating the Deployment
+### Server (.env)
+```
+PORT=3001
+CLIENT_URL=https://mazendeebo.github.io
+GEMINI_API_KEY=your_key
+CORS_ORIGIN=https://mazendeebo.github.io
+MONGODB_URI=mongodb://... (optional)
+MATTERPORT_SDK_KEY=your_key
+MATTERPORT_MODEL_ID=your_model_id
+```
 
-Simply push changes to the `main` branch:
+### Client (.env)
+```
+VITE_SERVER_URL=https://your-server.onrender.com
+VITE_MATTERPORT_SDK_KEY=your_key
+VITE_DEFAULT_MODEL_ID=your_model_id
+```
+
+---
+
+## Troubleshooting
+
+### CORS Errors
+- Ensure `CORS_ORIGIN` on server matches your GitHub Pages URL exactly
+- Check that the server's `CLIENT_URL` is correct
+
+### Matterport Not Loading
+- Verify SDK key is valid and domain is whitelisted
+- Check browser console for specific errors
+
+### Socket.io Connection Failed
+- Ensure server is running and accessible
+- Check `VITE_SERVER_URL` points to correct server
+
+### API Key Errors
+- Gemini API key may have expired - regenerate at Google AI Studio
+- Matterport SDK key must have correct domain permissions
+
+---
+
+## Local Development
 
 ```bash
-git add .
-git commit -m "Your update message"
-git push
+# Terminal 1 - Server
+cd server
+npm install
+cp .env.example .env  # Edit with your keys
+npm run dev
+
+# Terminal 2 - Client
+cd client
+npm install
+cp .env.example .env  # Edit with your keys
+npm run dev
 ```
 
-The GitHub Actions workflow will automatically rebuild and redeploy.
-
-## 🐛 Troubleshooting
-
-### Build Fails
-- Check that all GitHub Secrets are correctly set
-- Verify the secret names match exactly (case-sensitive)
-- Check the Actions logs for specific error messages
-
-### Site Not Loading
-- Ensure GitHub Pages is enabled in repository settings
-- Check that the base URL in `vite.config.js` matches your repository name
-- Wait a few minutes after deployment completes
-
-### API Keys Not Working
-- Verify secrets are set correctly in GitHub
-- Check browser console for error messages
-- Ensure the secret names in the workflow match the ones in your code
-
-## 📞 Support
-
-For issues related to:
-- **Matterport SDK**: Check [Matterport SDK Documentation](https://matterport.github.io/showcase-sdk/)
-- **GitHub Pages**: Check [GitHub Pages Documentation](https://docs.github.com/en/pages)
-- **Vite**: Check [Vite Documentation](https://vitejs.dev/)
-
-## 🎉 Success!
-
-Once deployed, your Matterport Smart Tour will be accessible at:
-**https://mazendeebo.github.io/ArabIQ_matterport/**
+Visit `http://localhost:3000`

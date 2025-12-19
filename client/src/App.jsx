@@ -83,7 +83,7 @@ function TourView() {
 
 function App() {
   return (
-    <BrowserRouter basename="/ArabIQ_matterport">
+    <BrowserRouter>
       <Routes>
         <Route path="/" element={<TourView />} />
         <Route path="/admin" element={<AdminDashboard />} />
