@@ -1,0 +1,23 @@
+services:
+  - type: web
+    name: matterport-smart-tour-server
+    runtime: node
+    region: frankfurt
+    plan: free
+    buildCommand: cd server && npm install
+    startCommand: cd server && npm start
+    envVars:
+      - key: PORT
+        value: 10000
+      - key: NODE_ENV
+        value: production
+      - key: CLIENT_URL
+        value: https://mazendeebo.github.io
+      - key: CORS_ORIGIN
+        value: https://mazendeebo.github.io
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MATTERPORT_SDK_KEY
+        value: bnx9rtn9umenhf4ym8bngu7ud
+      - key: MATTERPORT_MODEL_ID
+        value: J9fEBnyKuiv

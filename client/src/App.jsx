@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
 import { useTourStore } from './store/tourStore';
-import geminiService from './services/geminiService';
+import socketService from './services/socketService';
 import MatterportViewer from './components/MatterportViewer';
 import ChatBot from './components/ChatBot';
 import VideoCall from './components/VideoCall';
@@ -28,19 +28,19 @@ function TourView() {
   const isAdmin = searchParams.get('admin') === 'true';
   const [currentSpace, setCurrentSpace] = useState(getSpaceConfig(spaceId) || DEFAULT_SPACE);
 
-  // Initialize Gemini AI (client-side, no server needed)
+  // Connect to server for multi-user features
   useEffect(() => {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (apiKey) {
-      geminiService.initialize(apiKey);
-      // Initialize session with space config
-      geminiService.initializeSession('main-session', geminiService.getSpaceConfig(currentSpace?.modelId));
-      useTourStore.getState().setConnected(true);
+    const serverUrl = import.meta.env.VITE_SERVER_URL;
+    if (serverUrl) {
+      socketService.connect(serverUrl);
     } else {
-      console.warn('⚠️ VITE_GEMINI_API_KEY not set - AI chat disabled');
-      useTourStore.getState().setConnected(true); // Still allow tour without AI
+      console.warn('⚠️ VITE_SERVER_URL not set - multi-user features disabled');
     }
-  }, [currentSpace]);
+
+    return () => {
+      socketService.disconnect();
+    };
+  }, []);
 
   // Update model when space changes
   useEffect(() => {

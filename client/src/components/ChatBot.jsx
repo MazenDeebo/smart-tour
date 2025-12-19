@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTourStore } from '../store/tourStore';
+import socketService from '../services/socketService';
 import geminiService from '../services/geminiService';
 import matterportService from '../services/matterportService';
 import { 

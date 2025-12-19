@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import { useTourStore } from '../store/tourStore';
 import matterportService from '../services/matterportService';
+import socketService from '../services/socketService';
 import './MatterportViewer.css';
 
 const SDK_KEY = import.meta.env.VITE_MATTERPORT_SDK_KEY || 'bnx9rtn9umenhf4ym8bngu7ud';
@@ -11,7 +12,7 @@ const USE_SDK_BUNDLE = true;
 
 function MatterportViewer({ modelId }) {
   const iframeRef = useRef(null);
-  const { isSDKReady, spaceConfig } = useTourStore();
+  const { isSDKReady, spatial, userId, userName, spaceConfig } = useTourStore();
   const initRef = useRef(false);
   
   // Use prop modelId or fall back to default
@@ -24,12 +25,28 @@ function MatterportViewer({ modelId }) {
     try {
       console.log('🚀 Initializing Matterport SDK for model:', currentModelId);
       await matterportService.connect(iframeRef.current);
+      
+      // Join tour room
+      socketService.joinTour(currentModelId, userId, userName, 'guest');
+      
+      // Initialize AI session with space config
+      socketService.initializeSession({
+        spaceId: currentModelId,
+        spaceName: spaceConfig?.nameEn || 'Virtual Tour',
+        spaceType: spaceConfig?.type || 'property',
+        spaceInfo: {
+          description: spaceConfig?.description || '',
+          features: spaceConfig?.features || [],
+          sections: spaceConfig?.sections || [],
+        }
+      });
+      
       console.log('✅ SDK initialized successfully');
     } catch (error) {
       console.error('❌ SDK initialization failed:', error);
       initRef.current = false;
     }
-  }, [currentModelId]);
+  }, [userId, userName, currentModelId, spaceConfig]);
 
   // Load SDK script
   useEffect(() => {
@@ -46,6 +63,17 @@ function MatterportViewer({ modelId }) {
     };
   }, []);
 
+
+  // Broadcast spatial updates
+  useEffect(() => {
+    if (!isSDKReady) return;
+
+    const interval = setInterval(() => {
+      socketService.updateSpatial(spatial);
+    }, 500);
+
+    return () => clearInterval(interval);
+  }, [isSDKReady, spatial]);
 
   const handleIframeLoad = () => {
     console.log('📺 Iframe loaded');
