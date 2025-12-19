@@ -8,8 +8,8 @@ export default defineConfig(({ mode }) => {
   return {
     plugins: [react()],
     // Base path for GitHub Pages deployment
-    // Change 'matterport-smart-tour' to your repository name
-    base: mode === 'production' ? '/matterport-smart-tour/' : '/',
+    // Repository name: ArabIQ_matterport
+    base: mode === 'production' ? '/ArabIQ_matterport/' : '/',
     server: {
       port: 3000,
       strictPort: true,
