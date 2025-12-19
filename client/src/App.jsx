@@ -53,8 +53,9 @@ function TourView() {
   const handleSpaceChange = (newSpace) => {
     setCurrentSpace(newSpace);
     const adminParam = isAdmin ? '&admin=true' : '';
+    const basePath = import.meta.env.BASE_URL || '/';
     // Force page reload to reinitialize Matterport with new model
-    window.location.href = `/?space=${newSpace.id}${adminParam}`;
+    window.location.href = `${basePath}?space=${newSpace.id}${adminParam}`;
   };
 
   return (
@@ -91,8 +92,11 @@ function TourView() {
 }
 
 function App() {
+  // Get base path for GitHub Pages deployment
+  const basename = import.meta.env.BASE_URL || '/';
+  
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={basename}>
       <Routes>
         <Route path="/" element={<TourView />} />
         <Route path="/admin" element={<AdminDashboard />} />

@@ -1,7 +1,6 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import { useTourStore } from '../store/tourStore';
 import matterportService from '../services/matterportService';
-import socketService from '../services/socketService';
 import './MatterportViewer.css';
 
 const SDK_KEY = import.meta.env.VITE_MATTERPORT_SDK_KEY || 'bnx9rtn9umenhf4ym8bngu7ud';
@@ -12,7 +11,7 @@ const USE_SDK_BUNDLE = true;
 
 function MatterportViewer({ modelId }) {
   const iframeRef = useRef(null);
-  const { isSDKReady, spatial, userId, userName, spaceConfig } = useTourStore();
+  const { isSDKReady, spaceConfig } = useTourStore();
   const initRef = useRef(false);
   
   // Use prop modelId or fall back to default
@@ -25,28 +24,12 @@ function MatterportViewer({ modelId }) {
     try {
       console.log('🚀 Initializing Matterport SDK for model:', currentModelId);
       await matterportService.connect(iframeRef.current);
-      
-      // Join tour room
-      socketService.joinTour(currentModelId, userId, userName, 'guest');
-      
-      // Initialize AI session with space config
-      socketService.initializeSession({
-        spaceId: currentModelId,
-        spaceName: spaceConfig?.nameEn || 'Virtual Tour',
-        spaceType: spaceConfig?.type || 'property',
-        spaceInfo: {
-          description: spaceConfig?.description || '',
-          features: spaceConfig?.features || [],
-          sections: spaceConfig?.sections || [],
-        }
-      });
-      
       console.log('✅ SDK initialized successfully');
     } catch (error) {
       console.error('❌ SDK initialization failed:', error);
       initRef.current = false;
     }
-  }, [userId, userName, currentModelId, spaceConfig]);
+  }, [currentModelId]);
 
   // Load SDK script
   useEffect(() => {
@@ -63,16 +46,6 @@ function MatterportViewer({ modelId }) {
     };
   }, []);
 
-  // Broadcast spatial updates
-  useEffect(() => {
-    if (!isSDKReady) return;
-
-    const interval = setInterval(() => {
-      socketService.updateSpatial(spatial);
-    }, 500);
-
-    return () => clearInterval(interval);
-  }, [isSDKReady, spatial]);
 
   const handleIframeLoad = () => {
     console.log('📺 Iframe loaded');
@@ -81,8 +54,9 @@ function MatterportViewer({ modelId }) {
 
   // Build iframe URL
   // Use SDK Bundle (local) for Scene API support, or hosted version for basic SDK
+  const basePath = import.meta.env.BASE_URL || '/';
   const iframeSrc = USE_SDK_BUNDLE
-    ? `/bundle/showcase.html?m=${currentModelId}&applicationKey=${SDK_KEY}&play=1&qs=1&title=0&mls=2&header=0&help=0&brand=0`
+    ? `${basePath}bundle/showcase.html?m=${currentModelId}&applicationKey=${SDK_KEY}&play=1&qs=1&title=0&mls=2&header=0&help=0&brand=0`
     : `https://my.matterport.com/show?m=${currentModelId}&play=1&qs=1&applicationKey=${SDK_KEY}&title=0&mls=2&header=0&help=0&brand=0`;
 
   return (
