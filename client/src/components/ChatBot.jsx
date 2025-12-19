@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTourStore } from '../store/tourStore';
-import socketService from '../services/socketService';
+import geminiService from '../services/geminiService';
 import matterportService from '../services/matterportService';
 import { 
   MessageCircle, Send, Minimize2, Mic, MicOff, 
@@ -82,10 +82,42 @@ function ChatBot() {
     setIsSpeaking(false);
   };
 
-  const sendMessageWithText = (text) => {
-    if (!text.trim() || !isConnected || chat.isLoading) return;
-    socketService.sendChatMessage(text.trim(), spatial, tourData);
+  const sendMessageWithText = async (text) => {
+    if (!text.trim() || chat.isLoading) return;
+    
+    const { addMessage, setLoading } = useTourStore.getState();
+    
+    // Add user message
+    addMessage({ role: 'user', content: text.trim() });
+    setLoading(true);
     setInput('');
+    
+    try {
+      // Use client-side Gemini service
+      const response = await geminiService.chat(
+        'main-session',
+        text.trim(),
+        spatial,
+        tourData
+      );
+      
+      // Add assistant response
+      addMessage({
+        role: 'assistant',
+        content: response.message,
+        actions: response.actions || [],
+        shouldSpeak: response.shouldSpeak
+      });
+    } catch (error) {
+      console.error('Chat error:', error);
+      addMessage({
+        role: 'assistant',
+        content: 'Sorry, I encountered an error. Please try again.',
+        actions: []
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const sendMessage = () => sendMessageWithText(input);

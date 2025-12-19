@@ -90,6 +90,10 @@ export const useTourStore = create((set, get) => ({
     chat: { ...state.chat, isLoading }
   })),
   
+  setLoading: (isLoading) => set((state) => ({
+    chat: { ...state.chat, isLoading }
+  })),
+  
   setCapabilities: (capabilities) => set((state) => ({
     chat: { ...state.chat, capabilities }
   })),

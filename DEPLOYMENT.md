@@ -1,143 +1,132 @@
-# Deployment Guide
+# Deployment Guide - 100% Serverless
 
 ## Overview
 
-This project consists of two parts:
-1. **Client** (React/Vite) - Can be deployed to GitHub Pages
-2. **Server** (Node.js/Express) - Needs a separate hosting service
+This project runs **entirely on GitHub Pages** - NO SERVER REQUIRED!
 
-## Important: GitHub Pages Limitations
-
-GitHub Pages only hosts **static files**. The server (backend) must be deployed separately to a service like:
-- [Render](https://render.com) (Free tier available)
-- [Railway](https://railway.app)
-- [Vercel](https://vercel.com) (for serverless)
-- [Heroku](https://heroku.com)
+All features work client-side:
+- ✅ Matterport 3D Virtual Tour
+- ✅ AI Chat Assistant (Gemini runs in browser)
+- ✅ Livestream/Video embedding
+- ✅ Spatial tracking and navigation
+- ✅ Admin controls (stored in localStorage)
 
 ---
 
-## Step 1: Deploy the Server
+## Quick Deploy to GitHub Pages
 
-### Option A: Deploy to Render (Recommended - Free)
+### Step 1: Configure GitHub Secrets
 
-1. Create account at [render.com](https://render.com)
-2. Click "New" → "Web Service"
-3. Connect your GitHub repository
-4. Configure:
-   - **Name**: `matterport-smart-tour-server`
-   - **Root Directory**: `server`
-   - **Build Command**: `npm install`
-   - **Start Command**: `node src/app.js`
-5. Add Environment Variables:
-   - `PORT`: `3001`
-   - `CLIENT_URL`: `https://mazendeebo.github.io`
-   - `GEMINI_API_KEY`: Your Gemini API key
-   - `CORS_ORIGIN`: `https://mazendeebo.github.io`
-   - `MATTERPORT_SDK_KEY`: Your Matterport SDK key
-   - `MATTERPORT_MODEL_ID`: Your model ID
-6. Deploy and note the URL (e.g., `https://matterport-smart-tour-server.onrender.com`)
-
----
-
-## Step 2: Configure GitHub Secrets
-
-Go to your GitHub repository → Settings → Secrets and variables → Actions
+Go to: **https://github.com/MazenDeebo/smart-tour/settings/secrets/actions**
 
 Add these secrets:
-- `VITE_SERVER_URL`: Your deployed server URL (from Step 1)
-- `VITE_MATTERPORT_SDK_KEY`: `bnx9rtn9umenhf4ym8bngu7ud`
-- `VITE_DEFAULT_MODEL_ID`: `J9fEBnyKuiv`
 
----
+| Secret Name | Value | Description |
+|-------------|-------|-------------|
+| `VITE_GEMINI_API_KEY` | Your Gemini API key | Get from [Google AI Studio](https://makersuite.google.com/app/apikey) |
+| `VITE_MATTERPORT_SDK_KEY` | `bnx9rtn9umenhf4ym8bngu7ud` | Your Matterport SDK key |
+| `VITE_DEFAULT_MODEL_ID` | `J9fEBnyKuiv` | Default Matterport model |
 
-## Step 3: Deploy Client to GitHub Pages
-
-### Automatic Deployment (Recommended)
-
-1. Push your code to the `main` branch
-2. Go to repository Settings → Pages
-3. Under "Build and deployment", select:
-   - Source: **GitHub Actions**
-4. The workflow will automatically build and deploy
-
-### Manual Deployment
-
-```bash
-cd client
-npm install
-npm run build
-# The dist folder contains the static files
-```
-
----
-
-## Step 4: Configure Matterport SDK
-
-Make sure your Matterport SDK key is configured to allow your GitHub Pages domain:
+### Step 2: Configure Matterport SDK Domain
 
 1. Go to [Matterport Developer Portal](https://matterport.com/developers)
-2. Find your SDK key
-3. Add domain: `mazendeebo.github.io` (https only)
-4. Add domain: `localhost:3000` (for local development)
+2. Find your SDK key settings
+3. Add allowed domain: `mazendeebo.github.io` (https only)
 
----
+### Step 3: Enable GitHub Pages
 
-## Environment Variables Reference
+1. Go to: **https://github.com/MazenDeebo/smart-tour/settings/pages**
+2. Under "Build and deployment":
+   - Source: **GitHub Actions**
+3. Push to `main` branch to trigger deployment
 
-### Server (.env)
-```
-PORT=3001
-CLIENT_URL=https://mazendeebo.github.io
-GEMINI_API_KEY=your_key
-CORS_ORIGIN=https://mazendeebo.github.io
-MONGODB_URI=mongodb://... (optional)
-MATTERPORT_SDK_KEY=your_key
-MATTERPORT_MODEL_ID=your_model_id
-```
+### Step 4: Access Your Site
 
-### Client (.env)
-```
-VITE_SERVER_URL=https://your-server.onrender.com
-VITE_MATTERPORT_SDK_KEY=your_key
-VITE_DEFAULT_MODEL_ID=your_model_id
-```
-
----
-
-## Troubleshooting
-
-### CORS Errors
-- Ensure `CORS_ORIGIN` on server matches your GitHub Pages URL exactly
-- Check that the server's `CLIENT_URL` is correct
-
-### Matterport Not Loading
-- Verify SDK key is valid and domain is whitelisted
-- Check browser console for specific errors
-
-### Socket.io Connection Failed
-- Ensure server is running and accessible
-- Check `VITE_SERVER_URL` points to correct server
-
-### API Key Errors
-- Gemini API key may have expired - regenerate at Google AI Studio
-- Matterport SDK key must have correct domain permissions
+After deployment completes:
+- **Main Tour**: `https://mazendeebo.github.io/smart-tour/`
+- **Admin Mode**: `https://mazendeebo.github.io/smart-tour/?admin=true`
+- **EAAC Space**: `https://mazendeebo.github.io/smart-tour/?space=eaac`
 
 ---
 
 ## Local Development
 
 ```bash
-# Terminal 1 - Server
-cd server
-npm install
-cp .env.example .env  # Edit with your keys
-npm run dev
-
-# Terminal 2 - Client
 cd client
 npm install
-cp .env.example .env  # Edit with your keys
+cp .env.example .env  # Edit with your API keys
 npm run dev
 ```
 
 Visit `http://localhost:3000`
+
+---
+
+## Environment Variables
+
+Create `client/.env` with:
+
+```env
+VITE_GEMINI_API_KEY=your_gemini_api_key
+VITE_MATTERPORT_SDK_KEY=bnx9rtn9umenhf4ym8bngu7ud
+VITE_DEFAULT_MODEL_ID=J9fEBnyKuiv
+```
+
+---
+
+## Security Notes
+
+⚠️ **API Key Exposure**: Since this runs entirely in the browser, API keys are visible to users. To protect your keys:
+
+1. **Gemini API Key**: 
+   - Use [API key restrictions](https://console.cloud.google.com/apis/credentials) 
+   - Restrict to your domain only
+   - Set usage quotas
+
+2. **Matterport SDK Key**:
+   - Already domain-restricted by Matterport
+   - Only works on whitelisted domains
+
+---
+
+## Troubleshooting
+
+### Matterport Not Loading
+- Check SDK key is valid
+- Verify domain is whitelisted in Matterport settings
+- Check browser console for errors
+
+### AI Chat Not Working
+- Verify `VITE_GEMINI_API_KEY` is set correctly
+- Check if API key has expired
+- Look for CORS errors in console
+
+### Build Fails on GitHub Actions
+- Check all secrets are configured
+- Verify secret names match exactly (case-sensitive)
+
+---
+
+## Architecture
+
+```
+┌─────────────────────────────────────────────┐
+│           GitHub Pages (Static)             │
+│  ┌───────────────────────────────────────┐  │
+│  │         React + Vite Client           │  │
+│  │  ┌─────────────┐  ┌────────────────┐  │  │
+│  │  │  Matterport │  │  Gemini AI     │  │  │
+│  │  │  SDK Bundle │  │  (Browser SDK) │  │  │
+│  │  └─────────────┘  └────────────────┘  │  │
+│  │  ┌─────────────┐  ┌────────────────┐  │  │
+│  │  │ Livestream  │  │  localStorage  │  │  │
+│  │  │  Service    │  │  (Config)      │  │  │
+│  │  └─────────────┘  └────────────────┘  │  │
+│  └───────────────────────────────────────┘  │
+└─────────────────────────────────────────────┘
+         │                    │
+         ▼                    ▼
+   Matterport API      Google Gemini API
+```
+
+No server needed! Everything runs in the browser.

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
 import { useTourStore } from './store/tourStore';
-import socketService from './services/socketService';
+import geminiService from './services/geminiService';
 import MatterportViewer from './components/MatterportViewer';
 import ChatBot from './components/ChatBot';
 import VideoCall from './components/VideoCall';
@@ -28,10 +28,19 @@ function TourView() {
   const isAdmin = searchParams.get('admin') === 'true';
   const [currentSpace, setCurrentSpace] = useState(getSpaceConfig(spaceId) || DEFAULT_SPACE);
 
+  // Initialize Gemini AI (client-side, no server needed)
   useEffect(() => {
-    socketService.connect();
-    return () => socketService.disconnect();
-  }, []);
+    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+    if (apiKey) {
+      geminiService.initialize(apiKey);
+      // Initialize session with space config
+      geminiService.initializeSession('main-session', geminiService.getSpaceConfig(currentSpace?.modelId));
+      useTourStore.getState().setConnected(true);
+    } else {
+      console.warn('⚠️ VITE_GEMINI_API_KEY not set - AI chat disabled');
+      useTourStore.getState().setConnected(true); // Still allow tour without AI
+    }
+  }, [currentSpace]);
 
   // Update model when space changes
   useEffect(() => {
@@ -70,7 +79,7 @@ function TourView() {
       {(call.state === 'active' || call.state === 'calling') && <VideoCall />}
       <div className={`connection-status ${isConnected ? 'connected' : 'disconnected'}`}>
         <span className="status-indicator" />
-        <span>{isConnected ? 'Connected' : 'Connecting...'}</span>
+        <span>{isConnected ? 'Connected' : 'Ready'}</span>
       </div>
       {isAdmin && (
         <div className="admin-badge">

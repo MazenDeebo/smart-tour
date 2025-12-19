@@ -6,7 +6,8 @@
  * https://matterport.github.io/showcase-sdk/sdkbundle_html_livestream.html
  */
 
-const SERVER_URL = import.meta.env.VITE_SERVER_URL || 'http://localhost:3001';
+// Serverless mode - use localStorage instead of server
+const STORAGE_KEY = 'matterport_livestream_config';
 
 class LivestreamService {
   constructor() {
@@ -341,29 +342,41 @@ class LivestreamService {
   }
 
   /**
-   * Fetch livestream config from server
+   * Fetch livestream config from localStorage (serverless mode)
    */
   async fetchConfig(spaceId) {
     try {
-      const response = await fetch(`${SERVER_URL}/api/livestream/${spaceId}`);
-      return await response.json();
+      const stored = localStorage.getItem(`${STORAGE_KEY}_${spaceId}`);
+      if (stored) {
+        return JSON.parse(stored);
+      }
+      return { 
+        active: false, 
+        spaceId,
+        whiteboard: this.config
+      };
     } catch (error) {
       console.error('Failed to fetch livestream config:', error);
-      return { active: false };
+      return { active: false, whiteboard: this.config };
     }
   }
 
   /**
-   * Admin: Set livestream URL (supports any video URL)
+   * Admin: Set livestream URL (localStorage - serverless mode)
    */
   async setLivestreamUrl(spaceId, videoUrl, title = 'Live Stream') {
     try {
-      const response = await fetch(`${SERVER_URL}/api/admin/livestream/${spaceId}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ teamsUrl: videoUrl, videoUrl, title })
-      });
-      return await response.json();
+      const config = {
+        spaceId,
+        videoUrl,
+        teamsUrl: videoUrl,
+        title,
+        active: true,
+        createdAt: new Date().toISOString(),
+        whiteboard: this.config
+      };
+      localStorage.setItem(`${STORAGE_KEY}_${spaceId}`, JSON.stringify(config));
+      return { success: true, config };
     } catch (error) {
       console.error('Failed to set livestream:', error);
       return { success: false, error: error.message };
@@ -371,14 +384,18 @@ class LivestreamService {
   }
 
   /**
-   * Admin: Stop livestream
+   * Admin: Stop livestream (localStorage - serverless mode)
    */
   async stopLivestream(spaceId) {
     try {
-      const response = await fetch(`${SERVER_URL}/api/admin/livestream/${spaceId}`, {
-        method: 'DELETE'
-      });
-      return await response.json();
+      const stored = localStorage.getItem(`${STORAGE_KEY}_${spaceId}`);
+      if (stored) {
+        const config = JSON.parse(stored);
+        config.active = false;
+        config.stoppedAt = new Date().toISOString();
+        localStorage.setItem(`${STORAGE_KEY}_${spaceId}`, JSON.stringify(config));
+      }
+      return { success: true };
     } catch (error) {
       console.error('Failed to stop livestream:', error);
       return { success: false };
