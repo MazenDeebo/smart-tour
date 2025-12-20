@@ -47,11 +47,11 @@ class LivestreamService {
         scale: { x: 1.6, y: 0.975, z: 1 },
         resolution: { w: 1280, h: 720 }
       },
-      // "Video streaming 2" tag (TV screen) - Z moved forward to be visible
+      // "Video streaming 2" tag (TV screen) - Z moved forward (+0.1) to be visible in front
       'video streaming 2': {
-        position: { x: -4.32, y: 1.77, z: -2.01 },
+        position: { x: -4.32, y: 1.53, z: -1.90 },
         rotation: { x: 0, y: 90, z: 0 },
-        scale: { x: 1.4, y: 0.8, z: 1 },
+        scale: { x: 1.2, y: 0.7, z: 1 },
         resolution: { w: 1280, h: 720 }
       }
     };
