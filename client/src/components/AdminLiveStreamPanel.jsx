@@ -22,16 +22,16 @@ function AdminLiveStreamPanel({ spaceConfig, isAdmin = false }) {
   const [loading, setLoading] = useState(false);
   const [videoType, setVideoType] = useState('none');
   
-  // Selected tag for stream placement
+  // Selected tag for stream placement - uses STATIC hardcoded coordinates
   const [selectedTag, setSelectedTag] = useState('video streaming');
   
-  // Available tag locations with static configurations
-  const tagOptions = [
-    { value: 'video streaming', label: 'Whiteboard (Training Room)' },
-    { value: 'video streaming 2', label: 'TV Screen (Meeting Room)' }
+  // Available tags with static configs (defined in livestreamService)
+  const availableTags = [
+    { name: 'video streaming', label: 'Video Streaming (Meeting Room)' },
+    { name: 'video streaming 2', label: 'Video Streaming 2 (TV Screen)' }
   ];
   
-  // Screen configuration - gets updated based on selected tag
+  // Screen configuration - gets updated from selected tag's static config
   const [screenConfig, setScreenConfig] = useState({
     position: { x: -4.57, y: 1.94, z: 5.44 },
     rotation: { x: 0, y: 181, z: 0 },
@@ -108,11 +108,11 @@ function AdminLiveStreamPanel({ spaceConfig, isAdmin = false }) {
     );
   };
 
-  // Update screen config when tag selection changes
+  // Update screen config when selected tag changes
   useEffect(() => {
     const tagConfig = livestreamService.getTagConfig(selectedTag);
     setScreenConfig(tagConfig);
-    console.log(`🎬 Tag changed to "${selectedTag}", config:`, tagConfig);
+    console.log(`🎬 Tag changed to "${selectedTag}", using config:`, tagConfig);
   }, [selectedTag]);
 
   // Admin: Start stream
@@ -124,11 +124,11 @@ function AdminLiveStreamPanel({ spaceConfig, isAdmin = false }) {
 
     setLoading(true);
     try {
-      // Get static config for selected tag
+      // Get STATIC config for selected tag (HARDCODED coordinates)
       const tagConfig = livestreamService.getTagConfig(selectedTag);
       
       console.log('🎬 Starting stream at tag:', selectedTag);
-      console.log('🎬 Using static config:', tagConfig);
+      console.log('🎬 Using STATIC config:', tagConfig);
       console.log('🎬 Video URL:', videoUrl);
       
       // Save to localStorage
@@ -136,11 +136,11 @@ function AdminLiveStreamPanel({ spaceConfig, isAdmin = false }) {
       console.log('🎬 Config saved:', result);
       
       if (result.success) {
-        // Create screen using static tag configuration
-        const screenResult = await livestreamService.createStreamAtVideoTag(
+        // Create screen using the STATIC tag config (NOT user-modified values)
+        const screenResult = await livestreamService.createStreamAtTag(
+          selectedTag,
           videoUrl,
-          streamTitle,
-          selectedTag
+          streamTitle
         );
         
         console.log('🎬 Screen creation result:', screenResult);
@@ -304,18 +304,17 @@ function AdminLiveStreamPanel({ spaceConfig, isAdmin = false }) {
             {/* Admin Controls */}
             {isAdmin ? (
               <>
-                {/* Tag Location Selector */}
+                {/* Tag Selection - STATIC coordinates per tag */}
                 <div className="input-group">
-                  <label>Screen Location</label>
+                  <label>Screen Location (Static Coordinates)</label>
                   <select
                     value={selectedTag}
                     onChange={(e) => setSelectedTag(e.target.value)}
                     disabled={isStreaming}
-                    className="tag-selector"
                   >
-                    {tagOptions.map(option => (
-                      <option key={option.value} value={option.value}>
-                        {option.label}
+                    {availableTags.map(tag => (
+                      <option key={tag.name} value={tag.name}>
+                        {tag.label}
                       </option>
                     ))}
                   </select>
