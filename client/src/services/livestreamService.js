@@ -30,13 +30,34 @@ class LivestreamService {
     this.title = 'Live Stream';
     this.showOverlay = true;
     
-    // Configuration - TV position
+    // STATIC TAG CONFIGURATIONS - each tag has its own fixed position/rotation/scale
+    this.tagConfigs = {
+      // "video streaming" tag - Whiteboard in training room
+      'video streaming': {
+        position: { x: -4.57, y: 1.94, z: 5.44 },
+        rotation: { x: 0, y: 181, z: 0 },
+        scale: { x: 1.6, y: 0.975, z: 1 },
+        resolution: { w: 1280, h: 720 }
+      },
+      // "Video streaming 2" tag - TV screen (moved forward on Z axis)
+      'video streaming 2': {
+        position: { x: -3.32, y: 1.77, z: -2.01 },  // Z moved forward
+        rotation: { x: 0, y: 90, z: 0 },
+        scale: { x: 1.2, y: 0.675, z: 1 },
+        resolution: { w: 1280, h: 720 }
+      }
+    };
+    
+    // Default configuration (fallback)
     this.config = {
-      position: { x: -4.77, y: 1.44, z: 5.74 },
-      rotation: { x: 0, y: 180, z: 0 },
-      scale: { x: 1.2, y: 0.675, z: 1 },
+      position: { x: -4.57, y: 1.94, z: 5.44 },
+      rotation: { x: 0, y: 181, z: 0 },
+      scale: { x: 1.6, y: 0.975, z: 1 },
       resolution: { w: 1280, h: 720 }
     };
+    
+    // Current active tag name
+    this.activeTagName = null;
     
     // SDK data for overlay
     this.sdkData = {
@@ -46,6 +67,26 @@ class LivestreamService {
       rooms: 0,
       modelName: ''
     };
+  }
+  
+  /**
+   * Get configuration for a specific tag by name
+   */
+  getTagConfig(tagName) {
+    if (!tagName) return this.config;
+    
+    const normalizedName = tagName.toLowerCase().trim();
+    
+    // Check for exact or partial match
+    for (const [key, config] of Object.entries(this.tagConfigs)) {
+      if (normalizedName.includes(key.toLowerCase()) || key.toLowerCase().includes(normalizedName)) {
+        console.log(`📺 Using static config for tag: "${key}"`);
+        return config;
+      }
+    }
+    
+    console.log(`📺 No static config for tag "${tagName}", using default`);
+    return this.config;
   }
 
   /**
@@ -318,27 +359,37 @@ class LivestreamService {
   }
 
   /**
-   * Create stream at the "video streaming" tag location
+   * Create stream at a specific tag location using static configuration
    */
-  async createStreamAtVideoTag(videoUrl, title = 'Live Stream') {
-    const tag = await this.findTagByLabel('video streaming');
+  async createStreamAtVideoTag(videoUrl, title = 'Live Stream', tagName = 'video streaming') {
+    const tag = await this.findTagByLabel(tagName);
+    
+    // Get static configuration for this tag
+    const tagConfig = this.getTagConfig(tagName);
+    this.activeTagName = tagName;
     
     if (tag) {
-      const position = tag.anchorPosition || tag.position || this.config.position;
       await this.navigateToTag(tag.sid || tag.id);
-      
-      return await this.createScreen({
-        position: position,
-        videoUrl: videoUrl,
-        title: title
-      });
-    } else {
-      console.log('📺 "video streaming" tag not found, using default position');
-      return await this.createScreen({
-        videoUrl: videoUrl,
-        title: title
-      });
     }
+    
+    // Always use the static tag configuration (ignore tag's actual position)
+    console.log(`📺 Creating stream at "${tagName}" with static config:`, tagConfig);
+    
+    return await this.createScreen({
+      position: tagConfig.position,
+      rotation: tagConfig.rotation,
+      scale: tagConfig.scale,
+      resolution: tagConfig.resolution,
+      videoUrl: videoUrl,
+      title: title
+    });
+  }
+  
+  /**
+   * Create stream at "Video streaming 2" tag (TV screen)
+   */
+  async createStreamAtVideoTag2(videoUrl, title = 'Live Stream') {
+    return await this.createStreamAtVideoTag(videoUrl, title, 'video streaming 2');
   }
 
   /**

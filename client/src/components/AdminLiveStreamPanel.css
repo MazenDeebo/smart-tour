@@ -47,6 +47,39 @@
   50% { opacity: 0.5; }
 }
 
+/* Tag Selector */
+.tag-selector {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(30, 30, 40, 0.8);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  color: #fff;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tag-selector:hover:not(:disabled) {
+  border-color: rgba(98, 100, 167, 0.5);
+}
+
+.tag-selector:focus {
+  outline: none;
+  border-color: #6264a7;
+}
+
+.tag-selector:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.tag-selector option {
+  background: #1e1e28;
+  color: #fff;
+  padding: 10px;
+}
+
 /* Panel */
 .admin-livestream-panel {
   position: fixed;

@@ -22,11 +22,20 @@ function AdminLiveStreamPanel({ spaceConfig, isAdmin = false }) {
   const [loading, setLoading] = useState(false);
   const [videoType, setVideoType] = useState('none');
   
-  // Screen configuration - TV on wall position
+  // Selected tag for stream placement
+  const [selectedTag, setSelectedTag] = useState('video streaming');
+  
+  // Available tag locations with static configurations
+  const tagOptions = [
+    { value: 'video streaming', label: 'Whiteboard (Training Room)' },
+    { value: 'video streaming 2', label: 'TV Screen (Meeting Room)' }
+  ];
+  
+  // Screen configuration - gets updated based on selected tag
   const [screenConfig, setScreenConfig] = useState({
-    position: { x: -4.77, y: 1.44, z: 5.74 },
-    rotation: { x: 0, y: 180, z: 0 }, // Facing forward
-    scale: { x: 1.2, y: 0.675, z: 1 }, // 16:9 aspect ratio, TV size
+    position: { x: -4.57, y: 1.94, z: 5.44 },
+    rotation: { x: 0, y: 181, z: 0 },
+    scale: { x: 1.6, y: 0.975, z: 1 },
     resolution: { w: 1280, h: 720 }
   });
 
@@ -99,6 +108,13 @@ function AdminLiveStreamPanel({ spaceConfig, isAdmin = false }) {
     );
   };
 
+  // Update screen config when tag selection changes
+  useEffect(() => {
+    const tagConfig = livestreamService.getTagConfig(selectedTag);
+    setScreenConfig(tagConfig);
+    console.log(`🎬 Tag changed to "${selectedTag}", config:`, tagConfig);
+  }, [selectedTag]);
+
   // Admin: Start stream
   const startStream = async () => {
     if (!videoUrl.trim()) {
@@ -108,31 +124,24 @@ function AdminLiveStreamPanel({ spaceConfig, isAdmin = false }) {
 
     setLoading(true);
     try {
-      console.log('🎬 Starting stream with config:', screenConfig);
+      // Get static config for selected tag
+      const tagConfig = livestreamService.getTagConfig(selectedTag);
+      
+      console.log('🎬 Starting stream at tag:', selectedTag);
+      console.log('🎬 Using static config:', tagConfig);
       console.log('🎬 Video URL:', videoUrl);
-      console.log('🎬 SDK Scene available:', !!mpSdk?.Scene);
       
-      // Update service config
-      livestreamService.updateConfig(screenConfig);
-      
-      // Save to server
+      // Save to localStorage
       const result = await livestreamService.setLivestreamUrl(spaceId, videoUrl, streamTitle);
-      console.log('🎬 Server response:', result);
+      console.log('🎬 Config saved:', result);
       
       if (result.success) {
-        // Create screen directly with full config
-        const screenConfig2 = {
-          position: screenConfig.position,
-          rotation: screenConfig.rotation,
-          scale: screenConfig.scale,
-          resolution: screenConfig.resolution,
-          videoUrl: videoUrl,
-          title: streamTitle
-        };
-        console.log('🎬 Creating screen with config:', screenConfig2);
-        console.log('🎬 videoUrl value:', videoUrl, 'type:', typeof videoUrl);
-        
-        const screenResult = await livestreamService.createScreen(screenConfig2);
+        // Create screen using static tag configuration
+        const screenResult = await livestreamService.createStreamAtVideoTag(
+          videoUrl,
+          streamTitle,
+          selectedTag
+        );
         
         console.log('🎬 Screen creation result:', screenResult);
         setIsStreaming(true);
@@ -295,6 +304,23 @@ function AdminLiveStreamPanel({ spaceConfig, isAdmin = false }) {
             {/* Admin Controls */}
             {isAdmin ? (
               <>
+                {/* Tag Location Selector */}
+                <div className="input-group">
+                  <label>Screen Location</label>
+                  <select
+                    value={selectedTag}
+                    onChange={(e) => setSelectedTag(e.target.value)}
+                    disabled={isStreaming}
+                    className="tag-selector"
+                  >
+                    {tagOptions.map(option => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
                 {/* Stream Title */}
                 <div className="input-group">
                   <label>Stream Title</label>
