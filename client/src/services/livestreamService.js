@@ -379,6 +379,7 @@ class LivestreamService {
 
   /**
    * Create stream at a specific tag location using STATIC hardcoded coordinates
+   * NOTE: Does NOT navigate to the tag - only creates the screen
    */
   async createStreamAtTag(tagName, videoUrl, title = 'Live Stream') {
     // Get the static config for this tag (HARDCODED - ignores tag position)
@@ -386,13 +387,8 @@ class LivestreamService {
     
     console.log(`📺 Creating stream at tag "${tagName}" with static config:`, tagConfig);
     
-    // Navigate to the tag if it exists
-    const tag = await this.findTagByLabel(tagName);
-    if (tag) {
-      await this.navigateToTag(tag.sid || tag.id);
-    }
-    
     // Use the STATIC hardcoded config, NOT the tag's actual position
+    // Do NOT navigate - just create the screen
     return await this.createScreen({
       position: tagConfig.position,
       rotation: tagConfig.rotation,

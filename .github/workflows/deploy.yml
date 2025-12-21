@@ -36,7 +36,7 @@ jobs:
         working-directory: ./client
         env:
           VITE_SERVER_URL: ${{ secrets.VITE_SERVER_URL }}
-          VITE_GEMINI_API_KEY: AIzaSyACnzqMisHV_3ljKLFdbfrvgjx9mlCFeCs
+          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
           VITE_MATTERPORT_SDK_KEY: bnx9rtn9umenhf4ym8bngu7ud
           VITE_DEFAULT_MODEL_ID: J9fEBnyKuiv
         run: npm run build
