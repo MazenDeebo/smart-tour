@@ -32,7 +32,7 @@ class LivestreamService {
     
     // Configuration - Default is Meeting Room (video streaming tag)
     this.config = {
-      position: { x: -4.37, y: 1.04, z: 5.54 },
+      position: { x: -4.37, y: 1.64, z: 5.54 },
       rotation: { x: 0, y: 91, z: 0 },
       scale: { x: 1.6, y: 0.975, z: 1 },
       resolution: { w: 1280, h: 720 }
@@ -42,7 +42,7 @@ class LivestreamService {
     this.tagConfigs = {
       // "video streaming" tag (Meeting Room - DEFAULT)
       'video streaming': {
-        position: { x: -4.37, y: 1.04, z: 5.54 },
+        position: { x: -4.37, y: 1.64, z: 5.54 },
         rotation: { x: 0, y: 91, z: 0 },
         scale: { x: 1.6, y: 0.975, z: 1 },
         resolution: { w: 1280, h: 720 }
