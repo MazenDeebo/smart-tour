@@ -5,7 +5,8 @@ import matterportService from '../services/matterportService';
 import { 
   Video, VideoOff, Monitor, Settings, 
   Play, Square, Navigation, Sliders,
-  Copy, Check, X, Tv, Eye, Users, ExternalLink
+  Copy, Check, X, Tv, Eye, Users, ExternalLink,
+  Camera, CameraOff
 } from 'lucide-react';
 import './AdminLiveStreamPanel.css';
 
@@ -21,6 +22,8 @@ function AdminLiveStreamPanel({ spaceConfig, isAdmin = false }) {
   const [showPositionSettings, setShowPositionSettings] = useState(false);
   const [loading, setLoading] = useState(false);
   const [videoType, setVideoType] = useState('none');
+  const [isWebcamMode, setIsWebcamMode] = useState(false);
+  const [webcamAvailable, setWebcamAvailable] = useState(false);
   
   // Selected tag for stream placement - uses STATIC hardcoded coordinates
   // Default is "video streaming" (Meeting Room)
@@ -49,6 +52,8 @@ function AdminLiveStreamPanel({ spaceConfig, isAdmin = false }) {
     if (mpSdk && isSDKReady) {
       livestreamService.initialize(mpSdk);
       checkExistingStream();
+      // Check webcam availability
+      livestreamService.checkWebcamAvailable().then(setWebcamAvailable);
     }
   }, [mpSdk, isSDKReady]);
 
@@ -163,8 +168,24 @@ function AdminLiveStreamPanel({ spaceConfig, isAdmin = false }) {
       await livestreamService.stopLivestream(spaceId);
       await livestreamService.removeScreen();
       setIsStreaming(false);
+      setIsWebcamMode(false);
     } catch (error) {
       console.error('Failed to stop stream:', error);
+    }
+    setLoading(false);
+  };
+
+  // Admin: Start webcam
+  const startWebcam = async () => {
+    setLoading(true);
+    try {
+      await livestreamService.startWebcam(selectedTag, streamTitle || 'Live Webcam');
+      setIsStreaming(true);
+      setIsWebcamMode(true);
+      setVideoType('webcam');
+    } catch (error) {
+      console.error('Failed to start webcam:', error);
+      alert('Failed to start webcam: ' + error.message);
     }
     setLoading(false);
   };
@@ -372,14 +393,27 @@ function AdminLiveStreamPanel({ spaceConfig, isAdmin = false }) {
                 {/* Stream Controls */}
                 <div className="stream-controls">
                   {!isStreaming ? (
-                    <button 
-                      className="control-btn start"
-                      onClick={startStream}
-                      disabled={!videoUrl.trim() || loading}
-                    >
-                      <Play size={18} />
-                      <span>{loading ? 'Starting...' : 'Start Stream'}</span>
-                    </button>
+                    <>
+                      <button 
+                        className="control-btn start"
+                        onClick={startStream}
+                        disabled={!videoUrl.trim() || loading}
+                      >
+                        <Play size={18} />
+                        <span>{loading ? 'Starting...' : 'Start Stream'}</span>
+                      </button>
+                      {webcamAvailable && (
+                        <button 
+                          className="control-btn webcam"
+                          onClick={startWebcam}
+                          disabled={loading}
+                          title="Start Webcam"
+                        >
+                          <Camera size={18} />
+                          <span>{loading ? 'Starting...' : 'Webcam'}</span>
+                        </button>
+                      )}
+                    </>
                   ) : (
                     <button 
                       className="control-btn stop"

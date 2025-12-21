@@ -26,6 +26,10 @@ class LivestreamService {
     this.isVideoPlaying = false;
     this.videoType = 'unknown';
     
+    // Webcam properties
+    this.webcamStream = null;
+    this.isWebcamActive = false;
+    
     // Display properties
     this.title = 'Live Stream';
     this.showOverlay = true;
@@ -131,6 +135,94 @@ class LivestreamService {
     
     // Try as direct video by default
     return 'direct';
+  }
+
+  /**
+   * Start webcam stream and display on 3D canvas
+   */
+  async startWebcam(tagName = 'video streaming', title = 'Live Webcam') {
+    try {
+      console.log('📹 Starting webcam...');
+      
+      // Request webcam access
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { width: 1280, height: 720, facingMode: 'user' },
+        audio: true
+      });
+      
+      this.webcamStream = stream;
+      this.isWebcamActive = true;
+      this.videoType = 'webcam';
+      this.title = title;
+      
+      // Create video element for webcam
+      this.destroyVideoElement();
+      const video = document.createElement('video');
+      video.srcObject = stream;
+      video.muted = true; // Mute to prevent feedback
+      video.playsInline = true;
+      video.autoplay = true;
+      
+      // Add to DOM temporarily
+      video.style.position = 'absolute';
+      video.style.top = '-9999px';
+      video.style.left = '-9999px';
+      document.body.appendChild(video);
+      
+      const self = this;
+      video.onloadedmetadata = function() {
+        console.log('📹 Webcam ready:', video.videoWidth, 'x', video.videoHeight);
+        self.isVideoPlaying = true;
+        video.play().catch(e => console.log('Webcam play error:', e));
+      };
+      
+      this.videoElement = video;
+      
+      // Get tag config and create screen
+      const tagConfig = this.getTagConfig(tagName);
+      
+      // Create the 3D screen with webcam
+      await this.createScreen({
+        position: tagConfig.position,
+        rotation: tagConfig.rotation,
+        scale: tagConfig.scale,
+        resolution: tagConfig.resolution,
+        videoUrl: 'webcam',
+        title: title
+      });
+      
+      console.log('📹 Webcam streaming to 3D canvas');
+      return true;
+    } catch (error) {
+      console.error('📹 Webcam error:', error);
+      this.isWebcamActive = false;
+      throw error;
+    }
+  }
+
+  /**
+   * Stop webcam stream
+   */
+  stopWebcam() {
+    if (this.webcamStream) {
+      this.webcamStream.getTracks().forEach(track => track.stop());
+      this.webcamStream = null;
+    }
+    this.isWebcamActive = false;
+    this.destroyVideoElement();
+    console.log('📹 Webcam stopped');
+  }
+
+  /**
+   * Check if webcam is available
+   */
+  async checkWebcamAvailable() {
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      return devices.some(device => device.kind === 'videoinput');
+    } catch (e) {
+      return false;
+    }
   }
 
   /**
@@ -984,6 +1076,9 @@ class LivestreamService {
 
     // Destroy video element
     this.destroyVideoElement();
+    
+    // Stop webcam if active
+    this.stopWebcam();
     
     // Hide YouTube overlay if it was showing
     this.hideYouTubeOverlay();
