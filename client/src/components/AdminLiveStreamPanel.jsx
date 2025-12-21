@@ -23,18 +23,21 @@ function AdminLiveStreamPanel({ spaceConfig, isAdmin = false }) {
   const [videoType, setVideoType] = useState('none');
   
   // Selected tag for stream placement - uses STATIC hardcoded coordinates
+  // Default is "video streaming" (Meeting Room)
   const [selectedTag, setSelectedTag] = useState('video streaming');
   
-  // Available tags with static configs (defined in livestreamService)
+  // Available tags with static configs (4 video streaming locations)
   const availableTags = [
     { name: 'video streaming', label: 'Video Streaming (Meeting Room)' },
-    { name: 'video streaming 2', label: 'Video Streaming 2 (TV Screen)' }
+    { name: 'video streaming 2', label: 'Video Streaming 2 (TV Screen)' },
+    { name: 'video streaming 3', label: 'Video Streaming 3' },
+    { name: 'video streaming 4', label: 'Video Streaming 4' }
   ];
   
   // Screen configuration - gets updated from selected tag's static config
   const [screenConfig, setScreenConfig] = useState({
-    position: { x: -4.57, y: 1.94, z: 5.44 },
-    rotation: { x: 0, y: 181, z: 0 },
+    position: { x: -4.37, y: 1.04, z: 5.54 },
+    rotation: { x: 0, y: 91, z: 0 },
     scale: { x: 1.6, y: 0.975, z: 1 },
     resolution: { w: 1280, h: 720 }
   });
@@ -184,19 +187,20 @@ function AdminLiveStreamPanel({ spaceConfig, isAdmin = false }) {
     }
   };
 
-  // Navigate to the screen location
-  const navigateToScreen = async () => {
+  // Navigate to the selected screen location
+  const navigateToScreen = async (tagName = selectedTag) => {
     try {
-      // First try to find and navigate to the "video streaming" tag
-      const tag = await livestreamService.findTagByLabel('video streaming');
+      // Find and navigate to the selected tag
+      const tag = await livestreamService.findTagByLabel(tagName);
       
       if (tag) {
         await livestreamService.navigateToTag(tag.sid || tag.id);
-        console.log('📍 Navigated to video streaming tag');
+        console.log(`📍 Navigated to ${tagName} tag`);
         return;
       }
       
-      // Fallback: Navigate to the position near the screen
+      // Fallback: Navigate to the position near the screen using tag config
+      const tagConfig = livestreamService.getTagConfig(tagName);
       const sweeps = tourData?.sweeps;
       if (sweeps && sweeps.length > 0) {
         let closestSweep = sweeps[0];
@@ -205,8 +209,8 @@ function AdminLiveStreamPanel({ spaceConfig, isAdmin = false }) {
         sweeps.forEach(sweep => {
           if (sweep.position) {
             const dist = Math.sqrt(
-              Math.pow(sweep.position.x - screenConfig.position.x, 2) +
-              Math.pow(sweep.position.z - screenConfig.position.z, 2)
+              Math.pow(sweep.position.x - tagConfig.position.x, 2) +
+              Math.pow(sweep.position.z - tagConfig.position.z, 2)
             );
             if (dist < minDist) {
               minDist = dist;
@@ -307,17 +311,26 @@ function AdminLiveStreamPanel({ spaceConfig, isAdmin = false }) {
                 {/* Tag Selection - STATIC coordinates per tag */}
                 <div className="input-group">
                   <label>Screen Location (Static Coordinates)</label>
-                  <select
-                    value={selectedTag}
-                    onChange={(e) => setSelectedTag(e.target.value)}
-                    disabled={isStreaming}
-                  >
-                    {availableTags.map(tag => (
-                      <option key={tag.name} value={tag.name}>
-                        {tag.label}
-                      </option>
-                    ))}
-                  </select>
+                  <div className="input-row">
+                    <select
+                      value={selectedTag}
+                      onChange={(e) => setSelectedTag(e.target.value)}
+                      disabled={isStreaming}
+                    >
+                      {availableTags.map(tag => (
+                        <option key={tag.name} value={tag.name}>
+                          {tag.label}
+                        </option>
+                      ))}
+                    </select>
+                    <button 
+                      className="icon-btn" 
+                      onClick={() => navigateToScreen(selectedTag)} 
+                      title="Go to Screen Location"
+                    >
+                      <Navigation size={16} />
+                    </button>
+                  </div>
                 </div>
 
                 {/* Stream Title */}

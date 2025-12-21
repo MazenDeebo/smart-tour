@@ -30,28 +30,42 @@ class LivestreamService {
     this.title = 'Live Stream';
     this.showOverlay = true;
     
-    // Configuration - Default TV position
+    // Configuration - Default is Meeting Room (video streaming tag)
     this.config = {
-      position: { x: -4.57, y: 1.94, z: 5.44 },
-      rotation: { x: 0, y: 181, z: 0 },
+      position: { x: -4.37, y: 1.04, z: 5.54 },
+      rotation: { x: 0, y: 91, z: 0 },
       scale: { x: 1.6, y: 0.975, z: 1 },
       resolution: { w: 1280, h: 720 }
     };
     
-    // Static configurations per tag name - HARDCODED
+    // Static configurations per tag name - HARDCODED (4 video streaming locations)
     this.tagConfigs = {
-      // "video streaming" tag (meeting room whiteboard)
+      // "video streaming" tag (Meeting Room - DEFAULT)
       'video streaming': {
-        position: { x: -4.57, y: 1.94, z: 5.44 },
-        rotation: { x: 0, y: 181, z: 0 },
+        position: { x: -4.37, y: 1.04, z: 5.54 },
+        rotation: { x: 0, y: 91, z: 0 },
         scale: { x: 1.6, y: 0.975, z: 1 },
         resolution: { w: 1280, h: 720 }
       },
-      // "Video streaming 2" tag (TV screen) - Z moved forward (+0.1) to be visible in front
+      // "video streaming 2" tag (TV Screen in lobby)
       'video streaming 2': {
-        position: { x: -4.32, y: 1.53, z: -1.90 },
+        position: { x: -4.22, y: 1.73, z: -2.3 },
+        rotation: { x: 0, y: 180, z: 0 },
+        scale: { x: 1.4, y: 0.9, z: 1 },
+        resolution: { w: 1280, h: 720 }
+      },
+      // "video streaming 3" tag (Additional screen location)
+      'video streaming 3': {
+        position: { x: -3.5, y: 1.5, z: 3.0 },
         rotation: { x: 0, y: 90, z: 0 },
         scale: { x: 1.2, y: 0.7, z: 1 },
+        resolution: { w: 1280, h: 720 }
+      },
+      // "video streaming 4" tag (Additional screen location)
+      'video streaming 4': {
+        position: { x: -2.0, y: 1.5, z: 0.0 },
+        rotation: { x: 0, y: 180, z: 0 },
+        scale: { x: 1.0, y: 0.6, z: 1 },
         resolution: { w: 1280, h: 720 }
       }
     };
