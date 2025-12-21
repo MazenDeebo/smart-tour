@@ -67,6 +67,13 @@ export const useTourStore = create((set, get) => ({
   participants: [],
   userId: `user_${Date.now()}`,
   userName: 'Guest',
+  
+  // YouTube Overlay
+  youtubeOverlay: {
+    isVisible: false,
+    videoUrl: '',
+    title: '',
+  },
 
   // Actions
   setSocket: (socket) => set({ socket }),
@@ -144,4 +151,13 @@ export const useTourStore = create((set, get) => ({
   })),
 
   setUserName: (userName) => set({ userName }),
+  
+  // YouTube Overlay
+  showYouTubeOverlay: (videoUrl, title) => set({
+    youtubeOverlay: { isVisible: true, videoUrl, title }
+  }),
+  
+  hideYouTubeOverlay: () => set({
+    youtubeOverlay: { isVisible: false, videoUrl: '', title: '' }
+  }),
 }));

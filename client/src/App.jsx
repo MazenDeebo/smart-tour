@@ -11,6 +11,7 @@ import SpatialOverlay from './components/SpatialOverlay';
 import ParticipantsList from './components/ParticipantsList';
 import SpaceSelector from './components/SpaceSelector';
 import AdminLiveStreamPanel from './components/AdminLiveStreamPanel';
+import YouTubeOverlay from './components/YouTubeOverlay';
 import AdminDashboard from './pages/AdminDashboard';
 import ClientView from './pages/ClientView';
 import { SPACES, getSpaceConfig, DEFAULT_SPACE } from './config/spaces';
@@ -21,7 +22,7 @@ function TourView() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [showChat, setShowChat] = useState(true);
   const [showParticipants, setShowParticipants] = useState(false);
-  const { isConnected, isSDKReady, call, participants, setModelId, setSpaceConfig } = useTourStore();
+  const { isConnected, isSDKReady, call, participants, setModelId, setSpaceConfig, youtubeOverlay, hideYouTubeOverlay } = useTourStore();
   
   // Get space and admin mode from URL
   const spaceId = searchParams.get('space') || 'awni';
@@ -87,6 +88,13 @@ function TourView() {
           <span>Admin Mode</span>
         </div>
       )}
+      {/* YouTube Overlay for videos that can't be rendered to 3D canvas */}
+      <YouTubeOverlay 
+        videoUrl={youtubeOverlay.videoUrl}
+        title={youtubeOverlay.title}
+        isVisible={youtubeOverlay.isVisible}
+        onClose={hideYouTubeOverlay}
+      />
     </div>
   );
 }

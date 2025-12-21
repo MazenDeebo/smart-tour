@@ -543,6 +543,11 @@ class LivestreamService {
       if (this.videoUrl && (this.videoType === 'direct' || this.videoType === 'hls')) {
         this.createVideoElement(this.videoUrl);
       }
+      
+      // For YouTube videos, trigger the overlay player (can't render to 3D canvas)
+      if (this.videoUrl && this.videoType === 'youtube') {
+        this.triggerYouTubeOverlay(this.videoUrl, title);
+      }
 
       // Draw initial content
       this.drawScreenContent();
@@ -654,6 +659,33 @@ class LivestreamService {
     if (this.videoUrl) {
       window.open(this.videoUrl, '_blank');
     }
+  }
+
+  /**
+   * Trigger YouTube overlay player via Zustand store
+   * This is needed because YouTube videos cannot be rendered to a 3D canvas
+   */
+  triggerYouTubeOverlay(videoUrl, title) {
+    // Import the store dynamically to avoid circular dependencies
+    import('../store/tourStore').then(({ useTourStore }) => {
+      const { showYouTubeOverlay } = useTourStore.getState();
+      showYouTubeOverlay(videoUrl, title);
+      console.log('📺 YouTube overlay triggered for:', videoUrl);
+    }).catch(err => {
+      console.error('Failed to trigger YouTube overlay:', err);
+    });
+  }
+
+  /**
+   * Hide YouTube overlay
+   */
+  hideYouTubeOverlay() {
+    import('../store/tourStore').then(({ useTourStore }) => {
+      const { hideYouTubeOverlay } = useTourStore.getState();
+      hideYouTubeOverlay();
+    }).catch(err => {
+      console.error('Failed to hide YouTube overlay:', err);
+    });
   }
 
   /**
@@ -952,6 +984,9 @@ class LivestreamService {
 
     // Destroy video element
     this.destroyVideoElement();
+    
+    // Hide YouTube overlay if it was showing
+    this.hideYouTubeOverlay();
 
     // Stop scene node
     if (this.node) {
