@@ -631,14 +631,16 @@ class LivestreamService {
       this.canvas.height = resolution.h;
       this.ctx = this.canvas.getContext('2d');
 
-      // Setup video element if we have a playable video URL
-      if (this.videoUrl && (this.videoType === 'direct' || this.videoType === 'hls')) {
+      // Setup video element if we have a playable video URL (NOT YouTube/meeting - those can't render to canvas)
+      if (this.videoUrl && (this.videoType === 'direct' || this.videoType === 'hls' || this.videoType === 'webcam')) {
         this.createVideoElement(this.videoUrl);
       }
       
-      // For YouTube videos, trigger the overlay player (can't render to 3D canvas)
+      // For YouTube videos, trigger the overlay player (can't render to 3D canvas due to iframe restrictions)
       if (this.videoUrl && this.videoType === 'youtube') {
         this.triggerYouTubeOverlay(this.videoUrl, title);
+        // Don't create video element for YouTube - it will fail
+        // The 3D canvas will show a nice placeholder instead
       }
 
       // Draw initial content
@@ -942,16 +944,22 @@ class LivestreamService {
         
         ctx.fillStyle = '#e0e7ff';
         ctx.fillText('YouTube Video', width / 2, centerY + 20);
-        ctx.fillStyle = '#fbbf24';
-        ctx.font = '14px Arial';
-        ctx.fillText('Click screen to open in new tab', width / 2, centerY + 45);
+        
+        // Show overlay is active
+        ctx.fillStyle = '#10b981';
+        ctx.font = 'bold 14px Arial';
+        ctx.fillText('✓ Playing in Overlay Window', width / 2, centerY + 45);
+        
+        ctx.fillStyle = '#a5b4fc';
+        ctx.font = '12px Arial';
+        ctx.fillText('Look for the floating player on your screen', width / 2, centerY + 70);
         
         // Show video ID
         const videoId = this.extractYouTubeId(this.videoUrl);
         if (videoId) {
           ctx.fillStyle = '#6b7280';
-          ctx.font = '12px Arial';
-          ctx.fillText(`ID: ${videoId}`, width / 2, centerY + 70);
+          ctx.font = '11px Arial';
+          ctx.fillText(`Video ID: ${videoId}`, width / 2, centerY + 95);
         }
       } else if (this.videoType === 'direct') {
         // Show video loading status

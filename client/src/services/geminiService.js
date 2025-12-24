@@ -345,4 +345,13 @@ Respond helpfully. Include action commands [NAV:...], [ROTATE:...], etc. when ap
 
 // Export singleton instance
 const geminiService = new GeminiService();
+
+// Auto-initialize with API key from environment
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+if (apiKey) {
+  geminiService.initialize(apiKey);
+} else {
+  console.warn('⚠️ VITE_GEMINI_API_KEY not found in environment');
+}
+
 export default geminiService;
