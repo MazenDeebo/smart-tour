@@ -278,8 +278,18 @@ Respond helpfully. Include action commands [NAV:...], [ROTATE:...], etc. when ap
       };
     } catch (error) {
       console.error('Gemini API error:', error);
+      
+      // Handle quota exceeded errors
+      if (error.message?.includes('429') || error.message?.includes('quota')) {
+        return {
+          message: "The AI assistant has reached its usage limit. Please wait a minute and try again, or contact the administrator to upgrade the API plan.",
+          actions: [],
+          error: true
+        };
+      }
+      
       return {
-        message: `I encountered an error: ${error.message}. Please try again.`,
+        message: `I encountered an error. Please try again in a moment.`,
         actions: [],
         error: true
       };

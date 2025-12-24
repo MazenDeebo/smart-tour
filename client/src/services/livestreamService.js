@@ -196,7 +196,20 @@ class LivestreamService {
     } catch (error) {
       console.error('📹 Webcam error:', error);
       this.isWebcamActive = false;
-      throw error;
+      
+      // Provide user-friendly error messages
+      let errorMessage = 'Failed to start webcam';
+      if (error.name === 'NotAllowedError' || error.name === 'PermissionDeniedError') {
+        errorMessage = 'Camera permission denied. Please allow camera access in your browser settings.';
+      } else if (error.name === 'NotFoundError' || error.name === 'DevicesNotFoundError') {
+        errorMessage = 'No camera found. Please connect a webcam and try again.';
+      } else if (error.name === 'NotReadableError' || error.name === 'TrackStartError') {
+        errorMessage = 'Camera is in use by another application. Please close other apps using the camera.';
+      } else if (error.name === 'OverconstrainedError') {
+        errorMessage = 'Camera does not support the requested resolution. Trying with default settings...';
+      }
+      
+      throw new Error(errorMessage);
     }
   }
 
