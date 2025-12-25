@@ -1,11 +1,11 @@
 import React from 'react';
 import { useTourStore } from '../../store/tourStore';
-import webrtcService from '../../services/webrtcService';
+import webrtcService from '../../services/webrtc/webrtcService';
 import { 
   MessageCircle, Users, Video, Phone, 
   Maximize, Share2
 } from 'lucide-react';
-import './ControlPanel.css';
+import '../../static/css/ControlPanel.css';
 
 interface ControlPanelProps {
   showChat: boolean;

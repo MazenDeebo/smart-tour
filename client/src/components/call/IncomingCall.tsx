@@ -1,8 +1,8 @@
 import React from 'react';
 import { useTourStore } from '../../store/tourStore';
-import webrtcService from '../../services/webrtcService';
+import webrtcService from '../../services/webrtc/webrtcService';
 import { Phone, PhoneOff, Video, User } from 'lucide-react';
-import './IncomingCall.css';
+import '../../static/css/IncomingCall.css';
 
 function IncomingCall(): React.ReactElement {
   const { call } = useTourStore();

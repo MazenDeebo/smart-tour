@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { X, Volume2, VolumeX, Maximize2, Minimize2, Move } from 'lucide-react';
-import './YouTubeOverlay.css';
+import '../../static/css/YouTubeOverlay.css';
 
 interface YouTubeOverlayProps {
   videoUrl: string;

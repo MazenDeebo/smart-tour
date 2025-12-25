@@ -4,7 +4,7 @@ import {
   Home, Save, Plus, Trash2, Edit2, Eye,
   Globe, Bot, Mic, Video, Map
 } from 'lucide-react';
-import './AdminDashboard.css';
+import '../../static/css/AdminDashboard.css';
 
 interface Space {
   id: string;

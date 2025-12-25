@@ -1,27 +1,26 @@
-# 🏠 Matterport Smart Virtual Tour System
+# Matterport Smart Virtual Tour System
 
-A comprehensive intelligent virtual tour platform that integrates **Matterport 3D spaces**, **Google Gemini AI chatbot**, and **WebRTC video/audio calling** with real-time spatial awareness and multi-user support.
+A comprehensive intelligent virtual tour platform integrating **Matterport 3D spaces**, **Google Gemini AI chatbot**, and **WebRTC video/audio calling** with real-time spatial awareness and multi-user support.
 
-**100% TypeScript** | **Feature-based Architecture** | **Production Ready**
-
----
-
-## 📋 Table of Contents
-
-1. [System Overview](#-system-overview)
-2. [Tech Stack](#-tech-stack)
-3. [Features](#-features)
-4. [Project Structure](#-project-structure)
-5. [Installation & Setup](#-installation--setup)
-6. [Configuration](#-configuration)
-7. [Configured Spaces](#-configured-spaces)
-8. [API Reference](#-api-reference)
-9. [Troubleshooting](#-troubleshooting)
-10. [License](#-license)
+**100% TypeScript** | **Modular Architecture** | **SOC (Separation of Concerns)** | **Production Ready**
 
 ---
 
-## 🎯 System Overview
+## Table of Contents
+
+1. [System Overview](#system-overview)
+2. [Tech Stack](#tech-stack)
+3. [Features](#features)
+4. [Project Structure](#project-structure)
+5. [Installation & Setup](#installation--setup)
+6. [Configuration](#configuration)
+7. [API Reference](#api-reference)
+8. [Troubleshooting](#troubleshooting)
+9. [License](#license)
+
+---
+
+## System Overview
 
 This system creates an immersive virtual tour experience where users can:
 - Explore 3D spaces powered by Matterport
@@ -30,7 +29,7 @@ This system creates an immersive virtual tour experience where users can:
 - Access different interfaces based on their role (visitor, client, admin)
 - Watch livestreams embedded directly in the 3D space
 
-### Architecture Diagram
+### Architecture
 
 ```
 ┌─────────────────────────────────────────────────────────────────┐
@@ -38,44 +37,25 @@ This system creates an immersive virtual tour experience where users can:
 │                              Port: 3000                          │
 ├─────────────────────────────────────────────────────────────────┤
 │  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │   Viewer     │  │    Chat      │  │  Livestream  │          │
-│  │  Components  │  │  Components  │  │  Components  │          │
+│  │    Views     │  │  Components  │  │   Services   │          │
+│  │  (Top-level) │  │  (Features)  │  │  (External)  │          │
 │  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘          │
 │         │                 │                 │                   │
 │  ┌──────▼─────────────────▼─────────────────▼───────┐          │
-│  │                    Services                       │          │
-│  │  matterport | socket | webrtc | gemini | stream  │          │
-│  └──────────────────────┬───────────────────────────┘          │
-│                         │                                       │
-│                  ┌──────▼───────┐                               │
-│                  │ Zustand Store │                              │
-│                  └──────────────┘                               │
+│  │              Store (Zustand) + Models             │          │
+│  └──────────────────────────────────────────────────┘          │
 └─────────────────────────┬───────────────────────────────────────┘
                           │ Socket.io
                           ▼
 ┌─────────────────────────────────────────────────────────────────┐
 │                SERVER (Node.js + TypeScript + Express)           │
 │                              Port: 3001                          │
-├─────────────────────────────────────────────────────────────────┤
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │    Socket    │  │    Gemini    │  │     REST     │          │
-│  │   Handler    │  │   Service    │  │    Routes    │          │
-│  └──────────────┘  └──────────────┘  └──────────────┘          │
-└─────────────────────────────────────────────────────────────────┘
-                          │
-                          ▼
-┌─────────────────────────────────────────────────────────────────┐
-│                      EXTERNAL SERVICES                           │
-│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐          │
-│  │  Matterport  │  │ Google Gemini│  │   MongoDB    │          │
-│  │   SDK/Cloud  │  │      AI      │  │  (Optional)  │          │
-│  └──────────────┘  └──────────────┘  └──────────────┘          │
 └─────────────────────────────────────────────────────────────────┘
 ```
 
 ---
 
-## 🛠️ Tech Stack
+## Tech Stack
 
 ### Frontend
 
@@ -102,31 +82,31 @@ This system creates an immersive virtual tour experience where users can:
 
 ---
 
-## ✨ Features
+## Features
 
-### 🏠 Matterport Integration
+### Matterport Integration
 - SDK Bundle integration for Scene API access
 - Real-time spatial tracking (position, rotation, floor)
 - Programmatic navigation and camera control
 - Custom 3D canvas components for livestream embedding
 
-### 🤖 AI Chatbot (Gemini)
+### AI Chatbot (Gemini)
 - Context-aware responses based on user's location
 - Spatial language understanding
 - Action commands: `[NAV:sweepId]`, `[ROTATE:direction:degrees]`, `[HIGHLIGHT:tagId]`
 - Voice input/output support
 
-### 📺 Livestream Integration
+### Livestream Integration
 - Microsoft Teams meeting embedding in 3D space
 - Custom canvas screen component
 - Admin controls for stream management
 
-### 📞 WebRTC Video/Audio Calls
+### WebRTC Video/Audio Calls
 - Peer-to-peer video calls
 - Audio-only option
 - Call notifications and controls
 
-### 📊 Role-Based Interfaces
+### Role-Based Interfaces
 
 | Route | Interface |
 |-------|-----------|
@@ -137,52 +117,125 @@ This system creates an immersive virtual tour experience where users can:
 
 ---
 
-## 📁 Project Structure
+## Project Structure
+
+The project follows a **modular architecture** with **Separation of Concerns (SOC)**:
 
 ```
-matterport-smart-tour/
+client/src/
 │
-├── 📂 client/                          # Frontend (React + TypeScript)
-│   └── 📂 src/
-│       ├── 📂 components/              # Feature-based components
-│       │   ├── 📂 chat/                # ChatBot
-│       │   ├── 📂 viewer/              # MatterportViewer, SpatialOverlay
-│       │   ├── 📂 livestream/          # AdminLiveStreamPanel, LiveStreamPanel
-│       │   ├── 📂 call/                # VideoCall, IncomingCall
-│       │   ├── 📂 ui/                  # ControlPanel, SpaceSelector, etc.
-│       │   └── index.ts                # Barrel export
-│       │
-│       ├── 📂 services/                # Service classes
-│       │   ├── geminiService.ts
-│       │   ├── livestreamService.ts
-│       │   ├── matterportService.ts
-│       │   ├── socketService.ts
-│       │   └── webrtcService.ts
-│       │
-│       ├── 📂 store/                   # Zustand store
-│       ├── 📂 hooks/                   # Custom hooks
-│       ├── 📂 constants/               # App constants
-│       ├── 📂 utils/                   # Utility functions
-│       ├── 📂 config/                  # Space configurations
-│       ├── 📂 types/                   # TypeScript types
-│       ├── 📂 pages/                   # Page components
-│       └── 📂 styles/                  # Global styles
+├── assets/                          # Static assets
+│   ├── images/                      # Image files
+│   └── videos/                      # Video files
 │
-├── 📂 server/                          # Backend (Node.js + TypeScript)
-│   └── 📂 src/
-│       ├── 📂 services/gemini/         # GeminiService
-│       ├── 📂 socket/                  # socketHandler
-│       ├── 📂 routes/                  # REST API routes
-│       ├── 📂 types/                   # Server types
-│       └── app.ts                      # Express entry
+├── components/                      # Feature-based React components
+│   ├── chat/                        # Chat feature
+│   │   ├── ChatBot.tsx
+│   │   ├── store/                   # Chat-specific store (if needed)
+│   │   └── index.ts
+│   │
+│   ├── viewer/                      # Matterport viewer feature
+│   │   ├── MatterportViewer.tsx
+│   │   ├── SpatialOverlay.tsx
+│   │   ├── store/
+│   │   └── index.ts
+│   │
+│   ├── livestream/                  # Livestream feature
+│   │   ├── AdminLiveStreamPanel.tsx
+│   │   ├── LiveStreamPanel.tsx
+│   │   ├── store/
+│   │   └── index.ts
+│   │
+│   ├── call/                        # Video/audio call feature
+│   │   ├── VideoCall.tsx
+│   │   ├── IncomingCall.tsx
+│   │   ├── store/
+│   │   └── index.ts
+│   │
+│   ├── controls/                    # Control panel
+│   │   ├── ControlPanel.tsx
+│   │   └── index.ts
+│   │
+│   ├── participants/                # Participants list
+│   │   ├── ParticipantsList.tsx
+│   │   └── index.ts
+│   │
+│   ├── space-selector/              # Space selection
+│   │   ├── SpaceSelector.tsx
+│   │   └── index.ts
+│   │
+│   └── youtube/                     # YouTube overlay
+│       ├── YouTubeOverlay.tsx
+│       └── index.ts
 │
-├── render.yaml                         # Deployment config
-└── README.md
+├── models/                          # Business logic & data models
+│   └── spaces.ts                    # Space configurations
+│
+├── services/                        # External API services
+│   ├── gemini/                      # Gemini AI service
+│   │   └── geminiService.ts
+│   │
+│   ├── matterport/                  # Matterport SDK service
+│   │   └── matterportService.ts
+│   │
+│   ├── socket/                      # Socket.io service
+│   │   └── socketService.ts
+│   │
+│   ├── webrtc/                      # WebRTC service
+│   │   └── webrtcService.ts
+│   │
+│   └── livestream/                  # Livestream service
+│       └── livestreamService.ts
+│
+├── static/                          # Static files
+│   ├── css/                         # All CSS files
+│   │   ├── ChatBot.css
+│   │   ├── MatterportViewer.css
+│   │   ├── VideoCall.css
+│   │   └── ...
+│   └── html/                        # HTML templates (if any)
+│
+├── store/                           # Global Zustand store
+│   └── tourStore.ts
+│
+├── views/                           # Top-level view compositions
+│   ├── home/                        # Home page view
+│   │   └── home-page.tsx
+│   │
+│   ├── tour/                        # Tour view
+│   │
+│   ├── admin/                       # Admin dashboard
+│   │   └── AdminDashboard.tsx
+│   │
+│   └── client/                      # Client dashboard
+│       └── ClientDashboard.tsx
+│
+├── types.d.ts                       # All TypeScript type definitions
+├── App.tsx                          # Main app with routing
+├── main.tsx                         # Entry point
+└── vite-env.d.ts                    # Vite environment types
+
+server/src/
+├── services/gemini/                 # Gemini AI service
+├── socket/                          # Socket handlers
+├── routes/                          # REST API routes
+├── types/                           # Server types
+└── app.ts                           # Express entry
 ```
+
+### Architecture Principles
+
+1. **Components/** - Each component belongs to its own folder with related files
+2. **Models/** - Business logic and class/object definitions
+3. **Services/** - External API integrations (Gemini, Matterport, Socket, WebRTC)
+4. **Static/** - CSS and HTML files separated from components
+5. **Store/** - Zustand stores for state management
+6. **Views/** - Top-level page compositions that combine components
+7. **types.d.ts** - Centralized type definitions
 
 ---
 
-## 🚀 Installation & Setup
+## Installation & Setup
 
 ### Prerequisites
 
@@ -214,7 +267,7 @@ cd client && npm run dev
 
 ---
 
-## ⚙️ Configuration
+## Configuration
 
 ### Server (`server/.env`)
 
@@ -235,7 +288,7 @@ VITE_DEFAULT_MODEL_ID=J9fEBnyKuiv
 
 ---
 
-## 🏢 Configured Spaces
+## Configured Spaces
 
 | ID | Name | Model ID | Features |
 |----|------|----------|----------|
@@ -244,7 +297,7 @@ VITE_DEFAULT_MODEL_ID=J9fEBnyKuiv
 
 ---
 
-## 📡 API Reference
+## API Reference
 
 ### REST Endpoints
 
@@ -259,14 +312,14 @@ VITE_DEFAULT_MODEL_ID=J9fEBnyKuiv
 
 | Event | Direction | Description |
 |-------|-----------|-------------|
-| `session-init` | Client → Server | Initialize session |
-| `chat-message` | Client → Server | Send chat |
-| `chat-response` | Server → Client | AI response |
-| `spatial-update` | Client → Server | Position update |
+| `session-init` | Client -> Server | Initialize session |
+| `chat-message` | Client -> Server | Send chat |
+| `chat-response` | Server -> Client | AI response |
+| `spatial-update` | Client -> Server | Position update |
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
 | Issue | Solution |
 |-------|----------|
@@ -288,13 +341,13 @@ cd server && npm run build
 
 ---
 
-## 📄 License
+## License
 
 MIT License
 
 ---
 
-## 🤝 Contributing
+## Contributing
 
 1. Fork the repository
 2. Create feature branch (`git checkout -b feature/amazing`)
@@ -304,4 +357,4 @@ MIT License
 
 ---
 
-**Built with ❤️ by ArabIQ using Matterport, Google Gemini AI, React, and TypeScript**
+**Built with by ArabIQ using Matterport, Google Gemini AI, React, and TypeScript**

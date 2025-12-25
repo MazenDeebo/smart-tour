@@ -3,7 +3,7 @@
  * Using SDK Bundle Scene API for proper 3D canvas rendering
  */
 
-import type { Position, Rotation, Tag } from '../types';
+import type { Position, Rotation, Tag } from '../../types.d';
 
 const STORAGE_KEY = 'matterport_livestream_config';
 
@@ -691,7 +691,7 @@ class LivestreamService {
   }
 
   private triggerYouTubeOverlay(videoUrl: string, title: string): void {
-    import('../store/tourStore').then(({ useTourStore }) => {
+    import('../../store/tourStore').then(({ useTourStore }) => {
       const { showYouTubeOverlay } = useTourStore.getState();
       showYouTubeOverlay(videoUrl, title);
       console.log('📺 YouTube overlay triggered for:', videoUrl);
@@ -701,7 +701,7 @@ class LivestreamService {
   }
 
   private hideYouTubeOverlay(): void {
-    import('../store/tourStore').then(({ useTourStore }) => {
+    import('../../store/tourStore').then(({ useTourStore }) => {
       const { hideYouTubeOverlay } = useTourStore.getState();
       hideYouTubeOverlay();
     }).catch(err => {

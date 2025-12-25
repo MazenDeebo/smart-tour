@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from 'react';
 import { useTourStore } from '../../store/tourStore';
-import webrtcService from '../../services/webrtcService';
+import webrtcService from '../../services/webrtc/webrtcService';
 import { PhoneOff, Mic, MicOff, Video, VideoOff, Loader2 } from 'lucide-react';
-import './VideoCall.css';
+import '../../static/css/VideoCall.css';
 
 function VideoCall(): React.ReactElement {
   const { call } = useTourStore();

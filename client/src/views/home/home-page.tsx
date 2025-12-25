@@ -1,45 +1,47 @@
-import React, { useEffect, useState } from 'react';
-import { BrowserRouter, Routes, Route, useSearchParams } from 'react-router-dom';
-import { useTourStore } from './store/tourStore';
-import socketService from './services/socket/socketService';
-import { MatterportViewer, SpatialOverlay } from './components/viewer';
-import { ChatBot } from './components/chat';
-import { AdminLiveStreamPanel } from './components/livestream';
-import { VideoCall, IncomingCall } from './components/call';
-import { ControlPanel } from './components/controls';
-import { SpaceSelector } from './components/space-selector';
-import { ParticipantsList } from './components/participants';
-import { YouTubeOverlay } from './components/youtube';
-import AdminDashboard from './views/admin/AdminDashboard';
-import ClientView from './views/client/ClientDashboard';
-import { getSpaceConfig, DEFAULT_SPACE } from './models/spaces';
-import type { SpaceConfig } from './types.d';
-import './styles/App.css';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { useTourStore } from '../../store/tourStore';
+import socketService from '../../services/socket/socketService';
+import { MatterportViewer } from '../../components/viewer';
+import { SpatialOverlay } from '../../components/viewer';
+import { ChatBot } from '../../components/chat';
+import { AdminLiveStreamPanel } from '../../components/livestream';
+import { VideoCall, IncomingCall } from '../../components/call';
+import { ControlPanel } from '../../components/controls';
+import { SpaceSelector } from '../../components/space-selector';
+import { ParticipantsList } from '../../components/participants';
+import { YouTubeOverlay } from '../../components/youtube';
+import { getSpaceConfig, DEFAULT_SPACE } from '../../models/spaces';
+import type { SpaceConfig } from '../../types.d';
 
-// End User Tour View
-function TourView(): React.ReactElement {
+export function HomePage(): React.ReactElement {
   const [searchParams] = useSearchParams();
   const [showChat, setShowChat] = useState<boolean>(true);
   const [showParticipants, setShowParticipants] = useState<boolean>(false);
-  const { isConnected, isSDKReady, call, participants, setModelId, setSpaceConfig, youtubeOverlay, hideYouTubeOverlay } = useTourStore();
-  
-  // Get space and admin mode from URL
+  const { 
+    isConnected, 
+    isSDKReady, 
+    call, 
+    participants, 
+    setModelId, 
+    setSpaceConfig, 
+    youtubeOverlay, 
+    hideYouTubeOverlay 
+  } = useTourStore();
+
   const spaceId = searchParams.get('space') || 'awni';
   const isAdmin = searchParams.get('admin') === 'true';
   const [currentSpace, setCurrentSpace] = useState<SpaceConfig | null>(
     (getSpaceConfig(spaceId) as SpaceConfig | null) || DEFAULT_SPACE
   );
 
-  // Connect to server for multi-user features
   useEffect(() => {
     socketService.connect();
-
     return () => {
       socketService.disconnect();
     };
   }, []);
 
-  // Update model when space changes
   useEffect(() => {
     if (currentSpace) {
       setModelId(currentSpace.modelId);
@@ -93,18 +95,4 @@ function TourView(): React.ReactElement {
   );
 }
 
-function App(): React.ReactElement {
-  const basename = import.meta.env.BASE_URL || '/';
-  
-  return (
-    <BrowserRouter basename={basename}>
-      <Routes>
-        <Route path="/" element={<TourView />} />
-        <Route path="/admin" element={<AdminDashboard />} />
-        <Route path="/client" element={<ClientView />} />
-      </Routes>
-    </BrowserRouter>
-  );
-}
-
-export default App;
+export default HomePage;

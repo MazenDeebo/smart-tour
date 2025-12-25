@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useTourStore } from '../../store/tourStore';
 import { MapPin, Compass, Layers, Tag, Eye, CheckCircle, XCircle, Crosshair, ChevronDown, ChevronUp } from 'lucide-react';
-import './SpatialOverlay.css';
+import '../../static/css/SpatialOverlay.css';
 
 function SpatialOverlay(): React.ReactElement {
   const { spatial, tourData, isSDKReady } = useTourStore();

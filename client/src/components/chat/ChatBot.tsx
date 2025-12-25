@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useTourStore } from '../../store/tourStore';
-import geminiService from '../../services/geminiService';
-import matterportService from '../../services/matterportService';
-import type { ChatAction } from '../../types';
+import geminiService from '../../services/gemini/geminiService';
+import matterportService from '../../services/matterport/matterportService';
+import type { ChatAction } from '../../types.d';
 import { 
   MessageCircle, Send, Minimize2, Mic, MicOff, 
   Volume2, VolumeX, Loader2, Navigation, MapPin,
   Home, Ruler, Play, HelpCircle, Compass
 } from 'lucide-react';
-import './ChatBot.css';
+import '../../static/css/ChatBot.css';
 
 interface QuickAction {
   icon: React.ReactElement;

@@ -5,7 +5,7 @@ import {
   Phone, Video, Share2, Settings, Bell,
   MapPin, Clock, Layers
 } from 'lucide-react';
-import './ClientView.css';
+import '../../static/css/ClientView.css';
 
 interface SpatialData {
   position?: { x: number; y: number; z: number };

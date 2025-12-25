@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useTourStore } from '../../store/tourStore';
-import livestreamService from '../../services/livestreamService';
-import matterportService from '../../services/matterportService';
+import livestreamService from '../../services/livestream/livestreamService';
+import matterportService from '../../services/matterport/matterportService';
 import { 
   Video, VideoOff, Monitor, 
   Play, Square, Navigation, Sliders,
   Copy, Check, X, Tv, Users, ExternalLink,
   Camera, Settings
 } from 'lucide-react';
-import type { SpaceConfig, Position, Rotation } from '../../types';
-import './AdminLiveStreamPanel.css';
+import type { SpaceConfig, Position, Rotation } from '../../types.d';
+import '../../static/css/AdminLiveStreamPanel.css';
 
 interface AdminLiveStreamPanelProps {
   spaceConfig: SpaceConfig | null;

@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { useTourStore } from '../../store/tourStore';
-import matterportService from '../../services/matterportService';
+import matterportService from '../../services/matterport/matterportService';
 import { 
   VideoOff, Monitor, ExternalLink, 
   Play, Settings, Maximize2,
   Copy, Check, X, Tv, Navigation
 } from 'lucide-react';
-import type { SpaceConfig, Position } from '../../types';
-import './LiveStreamPanel.css';
+import type { SpaceConfig, Position } from '../../types.d';
+import '../../static/css/LiveStreamPanel.css';
 
 interface LiveStreamPanelProps {
   spaceConfig: SpaceConfig | null;

@@ -1,6 +1,6 @@
-import { useTourStore } from '../store/tourStore';
-import socketService from './socketService';
-import type { CallType } from '../types';
+import { useTourStore } from '../../store/tourStore';
+import socketService from '../socket/socketService';
+import type { CallType } from '../../types.d';
 
 const ICE_SERVERS: RTCConfiguration = {
   iceServers: [

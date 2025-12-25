@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { getAllSpaces } from '../../config/spaces';
+import { getAllSpaces } from '../../models/spaces';
 import { Building2, ChevronDown, Check, MapPin, Tv, MessageSquare } from 'lucide-react';
-import type { SpaceConfig } from '../../types';
-import './SpaceSelector.css';
+import type { SpaceConfig } from '../../types.d';
+import '../../static/css/SpaceSelector.css';
 
 interface SpaceSelectorProps {
   currentSpace: SpaceConfig | null;

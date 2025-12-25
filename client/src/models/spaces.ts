@@ -3,7 +3,7 @@
  * Each space has its own settings, AI prompts, and embedded content
  */
 
-import type { Position, Rotation } from '../types';
+import type { Position, Rotation } from '../types.d';
 
 // Embed configuration type
 interface EmbedConfig {

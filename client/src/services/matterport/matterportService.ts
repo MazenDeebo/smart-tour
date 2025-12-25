@@ -1,5 +1,5 @@
-import { useTourStore } from '../store/tourStore';
-import type { Position, Rotation, ChatAction, Tag, Sweep, Floor } from '../types';
+import { useTourStore } from '../../store/tourStore';
+import type { Position, Rotation, ChatAction, Tag, Sweep, Floor } from '../../types.d';
 
 // Matterport SDK types
 interface MpSdk {

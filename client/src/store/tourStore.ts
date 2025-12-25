@@ -10,7 +10,7 @@ import type {
   TourStop,
   SpaceConfig,
   MatterportSDK,
-} from '../types';
+} from '../types.d';
 
 export const useTourStore = create<TourStore>()((set) => ({
   // Connection

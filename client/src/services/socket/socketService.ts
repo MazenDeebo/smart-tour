@@ -1,6 +1,6 @@
 import { io, Socket } from 'socket.io-client';
-import { useTourStore } from '../store/tourStore';
-import type { SpaceConfig, SpatialData, TourData, TourStop, CallType } from '../types';
+import { useTourStore } from '../../store/tourStore';
+import type { SpaceConfig, SpatialData, TourData, TourStop, CallType } from '../../types.d';
 
 interface SessionResponse {
   greeting: string;

@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useCallback } from 'react';
 import { useTourStore } from '../../store/tourStore';
-import matterportService from '../../services/matterportService';
-import socketService from '../../services/socketService';
-import './MatterportViewer.css';
+import matterportService from '../../services/matterport/matterportService';
+import socketService from '../../services/socket/socketService';
+import '../../static/css/MatterportViewer.css';
 
 const SDK_KEY = import.meta.env.VITE_MATTERPORT_SDK_KEY || 'bnx9rtn9umenhf4ym8bngu7ud';
 const DEFAULT_MODEL_ID = import.meta.env.VITE_DEFAULT_MODEL_ID || 'J9fEBnyKuiv';

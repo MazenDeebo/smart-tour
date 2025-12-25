@@ -1,9 +1,9 @@
 import React from 'react';
 import { useTourStore } from '../../store/tourStore';
-import webrtcService from '../../services/webrtcService';
+import webrtcService from '../../services/webrtc/webrtcService';
 import { User, Video, Phone, MapPin } from 'lucide-react';
-import type { Participant } from '../../types';
-import './ParticipantsList.css';
+import type { Participant } from '../../types.d';
+import '../../static/css/ParticipantsList.css';
 
 function ParticipantsList(): React.ReactElement {
   const { participants, call } = useTourStore();

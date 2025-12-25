@@ -236,39 +236,20 @@ export interface YouTubeOverlayState {
 // Store Types
 // ============================================
 export interface TourStoreState {
-  // Connection
   socket: unknown | null;
   isConnected: boolean;
-  
-  // Matterport
   mpSdk: MatterportSDK | null;
   isSDKReady: boolean;
   modelId: string;
-  
-  // Space config
   spaceConfig: SpaceConfig | null;
-  
-  // Spatial data
   spatial: SpatialData;
-  
-  // Tour data from SDK
   tourData: TourData;
-  
-  // Guided tour
   guidedTour: GuidedTour;
-  
-  // Chat
   chat: ChatState;
-  
-  // Call
   call: Call;
-  
-  // Participants
   participants: Participant[];
   userId: string;
   userName: string;
-  
-  // YouTube Overlay
   youtubeOverlay: YouTubeOverlayState;
 }
 
@@ -301,7 +282,7 @@ export interface TourStoreActions {
 export type TourStore = TourStoreState & TourStoreActions;
 
 // ============================================
-// Matterport SDK Types (simplified)
+// Matterport SDK Types
 // ============================================
 export interface MatterportSDK {
   Scene: {

@@ -3,7 +3,7 @@
  * Runs entirely in the browser - no server required
  */
 import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
-import type { SpatialData, TourData, ChatAction, ChatCapabilities } from '../types';
+import type { SpatialData, TourData, ChatAction, ChatCapabilities } from '../../types.d';
 
 interface SpaceConfigData {
   spaceId: string;
